@@ -22,7 +22,10 @@ class HimOrHer(Dataset):
 
         with open(self.Y_file, 'rb') as f:
             self.Y = p.load(f)
-
+        # Convert to float 32
+        self.X = self.X.type(torch.float32)
+        self.Y = self.Y.type(torch.float32)
+        self.Y = self.Y.unsqueeze(dim=1)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=val_split, random_state=42)
 
