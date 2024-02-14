@@ -1,0 +1,3 @@
+# Datasets
+him_or_her:
+  batch_size: 32
