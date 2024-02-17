@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
+from support.utils import plot_train_val_scores
 
 
 class BinaryClassifierTrainer(nn.Module):
@@ -27,6 +28,11 @@ class BinaryClassifierTrainer(nn.Module):
         for _ in tqdm(range(epochs)):
             self._train_step(print_metrics)
             self._val_step(print_metrics)
+
+    def plot_train_val_scores(self):
+        with torch.inference_mode():
+            plot_train_val_scores(
+                self.train_losses, self.train_accuracies, self.val_losses, self.val_accuracies)
 
     def _train_step(self, print_metrics):
         train_loss, train_acc = 0, 0
@@ -78,7 +84,7 @@ class BinaryClassifierTrainer(nn.Module):
             self.val_losses.append(val_loss)
             self.val_accuracies.append(val_acc)
         if (print_metrics):
-            print(f"Val  loss: {val_loss:.5f} | Val   acc: {val_acc:.5f}")
+            print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc:.5f}")
 
     def _accuracy_fun(self, y_pred, y_true):
         correct = torch.eq(y_true, y_pred).sum().item()

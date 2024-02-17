@@ -20,7 +20,7 @@ TIMEPOINTS = 300
 INPUT_SIZE = CHANNELS * TIMEPOINTS
 has_gpu = torch.cuda.is_available()
 device = 'cpu'
-EPOCHS = 100
+EPOCHS = 5
 
 train_dataset = HimOrHer(train=True)
 val_dataset = HimOrHer(train=False)
@@ -44,7 +44,7 @@ optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
 trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
                                   val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=EPOCHS, print_metrics=True)
-
+trainer.plot_train_val_scores()
 
 # %%
 x, y = next(iter(train_dataloader))
