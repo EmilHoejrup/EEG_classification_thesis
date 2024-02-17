@@ -44,9 +44,9 @@ class BinaryClassifierTrainer(nn.Module):
             y_logits = self.model(X)
 
             # Calculate metrics
-            loss = self.loss_fun(y_logits.squeeze(), y)
+            loss = self.loss_fun(y_logits, y)
             train_loss += loss
-            y_labels = torch.round(torch.sigmoid(y_logits.squeeze()))
+            y_labels = torch.round(torch.sigmoid(y_logits))
             train_acc += self._accuracy_fun(y, y_labels)
 
             # Backpropagation
@@ -71,10 +71,10 @@ class BinaryClassifierTrainer(nn.Module):
                 X, y = X.to(self.device), y.to(self.device)
                 # Forward pass
                 y_logits = self.model(X)
-                y_labels = torch.round(torch.sigmoid(y_logits.squeeze()))
+                y_labels = torch.round(torch.sigmoid(y_logits))
 
                 # Calculate metrics
-                val_loss += self.loss_fun(y_logits.squeeze(), y)
+                val_loss += self.loss_fun(y_logits, y)
                 # Go from logits -> prediction labels
                 val_acc += self._accuracy_fun(y, y_labels)
 

@@ -93,10 +93,5 @@ class TinyVGG(nn.Module):
         )
 
     def forward(self, x):
-        return self.classifier(self.block2(self.block1(x)))
-        # x = self.block1(x)
-        # print(x.shape)
-        # x = self.block2(x)
-        # print(x.shape)
-        # x = nn.Flatten(x)
-        # print(x.shape)
+        x = self.classifier(self.block2(self.block1(x)))
+        return x.squeeze()

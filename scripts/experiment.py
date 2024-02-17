@@ -1,16 +1,13 @@
 # %%
 from torch.utils.data import DataLoader, TensorDataset
-import torch.optim as optim
 from models import *
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from datasets import HimOrHer
 from trainer import *
 import yaml
 from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
-from tqdm import tqdm
 with open(CONFIG_FILE, 'r') as file:
     configs = yaml.safe_load(file)
 BATCH_SIZE = configs['him_or_her']['batch_size']
@@ -20,7 +17,7 @@ TIMEPOINTS = 300
 INPUT_SIZE = CHANNELS * TIMEPOINTS
 has_gpu = torch.cuda.is_available()
 device = 'cpu'
-EPOCHS = 5
+EPOCHS = 30
 
 train_dataset = HimOrHer(train=True)
 val_dataset = HimOrHer(train=False)
