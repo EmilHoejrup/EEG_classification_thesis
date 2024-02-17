@@ -41,9 +41,6 @@ class NewBasic(nn.Module):
         x = self.flatten(x)
         x = x.squeeze(-1)
         return x
-# Check balancen af categorier
-# NORMALIsER! (z-score)
-# evt normalisér pr kanal
 
 
 class BasicMLP2(nn.Module):
