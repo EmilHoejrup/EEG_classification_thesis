@@ -3,6 +3,89 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
+import numpy as np
+
+# https://colab.research.google.com/github/jeffheaton/app_deep_learning/blob/main/t81_558_class_10_3_transformer_timeseries.ipynb#scrollTo=wi-bRiyCN7Cw
+
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, dropout=0.1, max_len=300):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(
+            0, d_model, 2).float() * (-np.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + self.pe[:x.size(0), :]
+        return self.dropout(x)
+
+
+class VanillaTransformerModel(nn.Module):
+    def __init__(self, input_dim=63, d_model=300, nhead=6, num_layers=2, dropout=0.2):
+        super().__init__()
+
+        # self.encoder = nn.Linear(input_dim, d_model)
+        self.pos_encoder = PositionalEncoding(d_model, dropout)
+        encoder_layers = nn.TransformerEncoderLayer(d_model, nhead)
+        self.transformer_encoder = nn.TransformerEncoder(
+            encoder_layers, num_layers)
+        self.decoder = nn.Linear(d_model, 1)
+
+    def forward(self, x):
+        # x = self.encoder(x)
+        x = self.pos_encoder(x)
+        x = self.transformer_encoder(x)
+        x = self.decoder(x[:, -1, :])
+        return x.squeeze()
+
+# FROM HUGGINGFACE INTOR TO NLP TRANSFORMERS
+
+
+def scaled_dot_product_attention(query, key, value):
+    dim_k = query.size(-1)
+    scores = torch.bmm(query, key.transpose(1, 2)) / np.sqrt(dim_k)
+    weights = F.softmax(scores, dim=1)
+    return torch.bmm(weights, value)
+
+
+class AttentionHead(nn.Module):
+    def __init__(self, embed_dim, head_dim):
+        super().__init__()
+        self.q = nn.Linear(embed_dim, head_dim)
+        self.k = nn.Linear(embed_dim, head_dim)
+        self.v = nn.Linear(embed_dim, head_dim)
+        print(f"q,k,v shape: {embed_dim, head_dim}")
+
+    def forward(self, hidden_state):
+        x = scaled_dot_product_attention(
+            self.q(hidden_state), self.k(hidden_state), self.v(hidden_state))
+        print(f"scaled_dot_product_attention: {x.shape}")
+        return x
+
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        embed_dim = config['hidden_size']
+        num_heads = config['num_attention_heads']
+        head_dim = embed_dim // num_heads
+        self.heads = nn.ModuleList(
+            [AttentionHead(embed_dim=embed_dim, head_dim=head_dim)
+             for _ in range(num_heads)]
+        )
+        self.output_linear = nn.Linear(embed_dim, embed_dim)
+
+    def forward(self, hidden_state):
+        x = torch.cat([head(hidden_state) for head in self.heads], dim=1)
+        print(f"multihead attention before output layer: {x.shape}")
+        return self.output_linear(x)
 
 
 class BasicMLP(nn.Module):
@@ -61,7 +144,7 @@ class BasicMLP2(nn.Module):
     def forward(self, x):
         # batch_size = x.size(0)
         # x = x.view(batch_size, -1)
-        return self.block1(x)
+        return self.block1(x).squeeze()
 
 
 class TinyVGG(nn.Module):

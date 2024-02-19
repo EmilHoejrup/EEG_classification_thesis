@@ -1,3 +1,8 @@
 # Datasets
 him_or_her:
   batch_size: 32
+
+# Models
+vanilla_transformer:
+  hidden_size: 300
+  num_attention_heads: 3

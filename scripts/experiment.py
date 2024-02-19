@@ -6,6 +6,7 @@ import torch.nn as nn
 from datasets import HimOrHer
 from trainer import *
 import yaml
+import numpy as np
 from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
 with open(CONFIG_FILE, 'r') as file:
@@ -28,11 +29,11 @@ val_dataloader = DataLoader(
     dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 # %%
-# model = BasicMLP2(in_shape=INPUT_SIZE, out_shape=1, hidden_units=2000)
+model = BasicMLP2(in_shape=INPUT_SIZE, out_shape=1, hidden_units=2000)
 # running training loop with timer
 # model = ImprovedMLP(in_shape=INPUT_SIZE, out_shape=1,
 #                     hidden_units=200, num_layers=100)
-model = TinyVGG(input_shape=63, hidden_units=100, output_shape=1)
+# model = TinyVGG(input_shape=63, hidden_units=100, output_shape=1)
 # model = NewBasic(n_channels=63, n_timepoints=300, hidden_units=30)
 
 
@@ -48,4 +49,24 @@ x, y = next(iter(train_dataloader))
 x[0], y[0]
 
 
+# %%
+
+
+transformer_configs = configs['vanilla_transformer']
+att = MultiHeadAttention(transformer_configs)
+outp = att(x)
+outp
+
+# %%
+
+
+model = VanillaTransformerModel().to(device)
+
+
+loss_fun = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
+trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
+                                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer.fit(epochs=EPOCHS, print_metrics=True)
+trainer.plot_train_val_scores()
 # %%
