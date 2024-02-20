@@ -9,7 +9,7 @@ import numpy as np
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=300):
+    def __init__(self, d_model, dropout=0.1, max_len=290):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
 
@@ -28,7 +28,7 @@ class PositionalEncoding(nn.Module):
 
 
 class VanillaTransformerModel(nn.Module):
-    def __init__(self, input_dim=63, d_model=300, nhead=6, num_layers=2, dropout=0.2):
+    def __init__(self, input_dim=63, d_model=290, nhead=1, num_layers=2, dropout=0.2):
         super().__init__()
 
         # self.encoder = nn.Linear(input_dim, d_model)

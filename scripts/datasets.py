@@ -5,24 +5,85 @@ import numpy as np
 import pickle as p
 import gzip
 from pathlib import Path
+from itertools import product
 from support.constants import *
+import yaml
 from sklearn.preprocessing import StandardScaler
+from support.constants import CONFIG_FILE
+from torch.utils.data import DataLoader
+with open(CONFIG_FILE, 'r') as file:
+    configs = yaml.safe_load(file)
 
 X_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'X.npy.gz'
 Y_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'Y.p'
 
 
+def read_X_and_y(x_file, y_file):
+    with gzip.GzipFile(x_file, "r") as f:
+        X = torch.from_numpy(np.load(file=f))
+
+    with open(y_file, 'rb') as f:
+        Y = p.load(f)
+    return X, Y
+
+
+class DiscretizedHimOrHer(Dataset):
+    def __init__(self, train=True, val_split=0.2):
+        self.train = train
+        self.X, self.Y = read_X_and_y(X_HIM_OR_HER, Y_HIM_OR_HER)
+        self.X, self.Y = self.X[:10], self.Y[:10]
+        self.X = self._discretize(self.X)
+        self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
+            self.X, self.Y, test_size=val_split, random_state=43)
+
+    def _discretize(self, X):
+        self.p_length = configs['him_or_her']['perm_length']
+        values = [0, 1]
+        self.permutations = [list(perm)
+                             for perm in product(values, repeat=self.p_length)]
+        images, channels, timepoints = X.shape
+        discretized_X = []
+        for image in range(images):
+            image_sequence = []
+            for channel in range(channels):
+                sequence = X[image, channel]
+                discretized_sequence = self._permute(sequence)
+                image_sequence.append(discretized_sequence)
+            discretized_X.append(image_sequence)
+        return torch.tensor(discretized_X, dtype=torch.float32)
+
+    def _permute(self, X):
+        X = X.tolist()
+        new_sequence = []
+        for i in range(len(X) - self.p_length):
+            window = X[i:(i+self.p_length)]
+            window[0] = 0
+            for sample in range(1, len(window)):
+                if window[sample] < window[sample-1]:
+                    window[sample] = 0
+                else:
+                    window[sample] = 1
+            new_sequence.append(self.permutations.index(window))
+        return new_sequence
+
+    def __len__(self):
+        if self.train:
+            return len(self.X_train)
+        else:
+            return len(self.X_val)
+
+    def __getitem__(self, index):
+        if self.train:
+            return self.X_train[index], self.Y_train[index]
+        else:
+            return self.X_val[index], self.Y_val[index]
+
+
 class HimOrHer(Dataset):
     def __init__(self, train=True, val_split=0.2):
         self.train = train
-        self.X_file = X_HIM_OR_HER
-        self.Y_file = Y_HIM_OR_HER
+        self.X, self.Y = read_X_and_y(X_HIM_OR_HER, Y_HIM_OR_HER)
 
-        with gzip.GzipFile(self.X_file, "r") as f:
-            self.X = torch.from_numpy(np.load(file=f))
-
-        with open(self.Y_file, 'rb') as f:
-            self.Y = p.load(f)
         # Convert to float 32
         self.X = self.X.type(torch.float32)
         self.Y = self.Y.type(torch.float32)
