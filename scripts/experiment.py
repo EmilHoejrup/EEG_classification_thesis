@@ -13,13 +13,13 @@ from torch.utils.data import DataLoader
 with open(CONFIG_FILE, 'r') as file:
     configs = yaml.safe_load(file)
 BATCH_SIZE = configs['him_or_her']['batch_size']
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 CHANNELS = 63
 TIMEPOINTS = 300
 INPUT_SIZE = CHANNELS * TIMEPOINTS
 has_gpu = torch.cuda.is_available()
 device = 'cpu'
-EPOCHS = 30
+EPOCHS = 300
 
 
 # %%
@@ -32,7 +32,6 @@ EPOCHS = 30
 model = VanillaTransformerModel().to(device)
 
 
-# %%
 train_dataset = DiscretizedHimOrHer(train=True)
 val_dataset = DiscretizedHimOrHer(train=False)
 
@@ -40,13 +39,32 @@ train_dataloader = DataLoader(
     dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
 val_dataloader = DataLoader(
     dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
-
+# %%
 loss_fun = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
 trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
                                   val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
-trainer.fit()
-
+trainer.fit(epochs=20)
+trainer.plot_train_val_scores()
 # %%
 x, y = next(iter(train_dataloader))
-x[0], y[0]
+x[1][1], y[0]
+
+# %%
+model = VanillaTransformerModel().to(device)
+
+
+train_dataset = HimOrHer(train=True)
+val_dataset = HimOrHer(train=False)
+
+train_dataloader = DataLoader(
+    dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
+val_dataloader = DataLoader(
+    dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
+# %%
+loss_fun = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
+trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
+                                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer.fit(epochs=20)
+trainer.plot_train_val_scores()

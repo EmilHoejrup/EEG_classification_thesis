@@ -31,7 +31,7 @@ class DiscretizedHimOrHer(Dataset):
     def __init__(self, train=True, val_split=0.2):
         self.train = train
         self.X, self.Y = read_X_and_y(X_HIM_OR_HER, Y_HIM_OR_HER)
-        self.X, self.Y = self.X[:10], self.Y[:10]
+        # self.X, self.Y = self.X[:10], self.Y[:10]
         self.X = self._discretize(self.X)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=val_split, random_state=43)
@@ -55,15 +55,18 @@ class DiscretizedHimOrHer(Dataset):
     def _permute(self, X):
         X = X.tolist()
         new_sequence = []
-        for i in range(len(X) - self.p_length):
+        X[0] = 0
+        for i in range(1, len(X)):
+            if X[i] > X[i-1]:
+                X[i] = 1
+            else:
+                X[i] = 0
+        # print(X)
+
+        for i in range(0, len(X) - self.p_length, 10):
             window = X[i:(i+self.p_length)]
-            window[0] = 0
-            for sample in range(1, len(window)):
-                if window[sample] < window[sample-1]:
-                    window[sample] = 0
-                else:
-                    window[sample] = 1
             new_sequence.append(self.permutations.index(window))
+        new_sequence.append(0)
         return new_sequence
 
     def __len__(self):
