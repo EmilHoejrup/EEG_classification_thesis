@@ -1,4 +1,5 @@
 # %%
+import math
 from itertools import product
 from torch.utils.data import DataLoader, TensorDataset
 from models import *
@@ -20,6 +21,8 @@ INPUT_SIZE = CHANNELS * TIMEPOINTS
 has_gpu = torch.cuda.is_available()
 device = 'cpu'
 EPOCHS = 300
+# downsampling with moving average
+" Hamming window?"
 
 
 # %%
@@ -29,30 +32,6 @@ EPOCHS = 300
 #                     hidden_units=200, num_layers=100)
 # model = TinyVGG(input_shape=63, hidden_units=100, output_shape=1)
 # model = NewBasic(n_channels=63, n_timepoints=300, hidden_units=30)
-model = VanillaTransformerModel().to(device)
-
-
-train_dataset = DiscretizedHimOrHer(train=True)
-val_dataset = DiscretizedHimOrHer(train=False)
-
-train_dataloader = DataLoader(
-    dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
-val_dataloader = DataLoader(
-    dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
-# %%
-loss_fun = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
-trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
-                                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
-trainer.fit(epochs=20)
-trainer.plot_train_val_scores()
-# %%
-x, y = next(iter(train_dataloader))
-x[1][1], y[0]
-
-# %%
-model = VanillaTransformerModel().to(device)
-
 
 train_dataset = HimOrHer(train=True)
 val_dataset = HimOrHer(train=False)
@@ -61,10 +40,47 @@ train_dataloader = DataLoader(
     dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
 val_dataloader = DataLoader(
     dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
-# %%
+model = SimpleTransformerModel(input_dim=63, d_model=300)
 loss_fun = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
 trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
                                   val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=20)
 trainer.plot_train_val_scores()
+# %%
+train_dataset = DiscretizedHimOrHer(train=True)
+val_dataset = DiscretizedHimOrHer(train=False)
+
+train_dataloader = DataLoader(
+    dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
+val_dataloader = DataLoader(
+    dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
+
+model = SimpleTransformerModel(input_dim=63, d_model=300)
+loss_fun = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
+trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
+                                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer.fit(epochs=20)
+trainer.plot_train_val_scores()
+# %%
+x, y = next(iter(train_dataloader))
+x[1][1], y[1]
+
+
+# %%
+
+model = TinyVGG(input_shape=63, hidden_units=100, output_shape=1)
+
+loss_fun = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
+trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
+                                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer.fit(epochs=20)
+trainer.plot_train_val_scores()
+# %%
+p_length = configs['him_or_her']['window_size']
+values = [0, 1]
+permutations = [list(perm)for perm in product(values, repeat=p_length)]
+# %%
+# %%

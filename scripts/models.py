@@ -1,3 +1,4 @@
+import math
 from torch.nn import Sequential, Linear, ReLU, BatchNorm1d, Dropout
 import torch
 import torch.nn as nn
@@ -54,20 +55,68 @@ class PositionalEncoding(nn.Module):
 #         return self.dropout(x)
 
 
-class VanillaTransformerModel(nn.Module):
-    def __init__(self, input_dim=63, d_model=30, nhead=1, num_layers=2, dropout=0.2):
+class SimpleTransformerModel(nn.Module):
+    def __init__(self, input_dim=63, d_model=300, nhead=4, num_layers=2, dropout=0.2, max_len=5000):
         super().__init__()
 
-        # self.encoder = nn.Linear(input_dim, d_model)
-        self.pos_encoder = PositionalEncoding(d_model, dropout)
+        self.input_dim = input_dim
+        self.d_model = d_model
+        self.max_len = max_len
+
+        self.input_embedding = nn.Linear(input_dim, d_model)
+
+        self.encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead)
+        self.transformer_encoder = nn.TransformerEncoder(
+            self.encoder_layer, num_layers=num_layers)
+
+        self.decoder = nn.Linear(d_model, 1)
+
+        self.positional_encoding = self.get_positional_encoding()
+
+    def forward(self, x):
+        # Reshape input tensor to (timepoints, batch_size, channels)
+        x = x.permute(2, 0, 1)  # Shape: (timepoints, batch_size, channels)
+
+        x = self.input_embedding(x)
+
+        x = x + self.positional_encoding[:x.size(0), :]
+
+        x = self.transformer_encoder(x)
+
+        x = x[-1, :, :]
+
+        x = self.decoder(x)
+
+        return x.squeeze()
+
+    def get_positional_encoding(self):
+        pe = torch.zeros(self.max_len, self.d_model)
+        position = torch.arange(
+            0, self.max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(
+            0, self.d_model, 2).float() * (-math.log(10000.0) / self.d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(1)  # Add batch dimension
+        return pe
+
+
+class VanillaTransformerModel(nn.Module):
+    # 148
+    def __init__(self, input_dim=63, d_model=300, nhead=4, num_layers=2, dropout=0.2):
+        super().__init__()
+
+        self.encoder = nn.Linear(input_dim, d_model)
+        # self.pos_encoder = PositionalEncoding(d_model, dropout)
         encoder_layers = nn.TransformerEncoderLayer(d_model, nhead)
         self.transformer_encoder = nn.TransformerEncoder(
             encoder_layers, num_layers)
         self.decoder = nn.Linear(d_model, 1)
 
     def forward(self, x):
-        # x = self.encoder(x)
-        x = self.pos_encoder(x)
+        x = self.encoder(x)
+        # x = self.pos_encoder(x)
         x = self.transformer_encoder(x)
         x = self.decoder(x[:, -1, :])
         return x.squeeze()

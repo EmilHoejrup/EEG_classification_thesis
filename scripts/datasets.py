@@ -37,7 +37,7 @@ class DiscretizedHimOrHer(Dataset):
             self.X, self.Y, test_size=val_split, random_state=43)
 
     def _discretize(self, X):
-        self.p_length = configs['him_or_her']['perm_length']
+        self.p_length = configs['him_or_her']['window_size']
         values = [0, 1]
         self.permutations = [list(perm)
                              for perm in product(values, repeat=self.p_length)]
@@ -63,10 +63,11 @@ class DiscretizedHimOrHer(Dataset):
                 X[i] = 0
         # print(X)
 
-        for i in range(0, len(X) - self.p_length, 10):
+        for i in range(0, len(X) - self.p_length, 2):
             window = X[i:(i+self.p_length)]
             new_sequence.append(self.permutations.index(window))
         new_sequence.append(0)
+
         return new_sequence
 
     def __len__(self):

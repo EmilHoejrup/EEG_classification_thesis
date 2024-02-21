@@ -1,7 +1,8 @@
 # Datasets
 him_or_her:
   batch_size: 32
-  perm_length: 10
+  window_size: 6
+  stride: 2
 
 # Models
 vanilla_transformer:
