@@ -6,64 +6,19 @@ import torch.nn.functional as F
 import torch.nn.init as init
 import numpy as np
 
-# https://colab.research.google.com/github/jeffheaton/app_deep_learning/blob/main/t81_558_class_10_3_transformer_timeseries.ipynb#scrollTo=wi-bRiyCN7Cw
-
-
-class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-
-        self.register_buffer(
-            'pe', self._generate_positional_encoding(d_model, max_len))
-
-    def forward(self, x):
-        # Adjust the size of positional encoding based on the input length
-        pe = self.pe[:, :x.size(1)]  # Slice the positional encoding tensor
-        x = x + pe
-        return self.dropout(x)
-
-    def _generate_positional_encoding(self, d_model, max_len):
-        pe = torch.zeros(1, max_len, d_model)  # Adjust the dimensions of pe
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(
-            0, d_model, 2).float() * (-np.log(10000.0) / d_model))
-        # Adjust indexing to match new dimensions
-        pe[:, :, 0::2] = torch.sin(position * div_term)
-        # Adjust indexing to match new dimensions
-        pe[:, :, 1::2] = torch.cos(position * div_term)
-        return pe
-
-
-# class PositionalEncoding(nn.Module):
-#     def __init__(self, d_model, dropout=0.1, max_len=300):
-#         super(PositionalEncoding, self).__init__()
-#         self.dropout = nn.Dropout(p=dropout)
-
-#         pe = torch.zeros(max_len, d_model)
-#         position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-#         div_term = torch.exp(torch.arange(
-#             0, d_model, 2).float() * (-np.log(10000.0) / d_model))
-#         pe[:, 0::2] = torch.sin(position * div_term)
-#         pe[:, 1::2] = torch.cos(position * div_term)
-#         pe = pe.unsqueeze(0).transpose(0, 1)
-#         self.register_buffer('pe', pe)
-
-#     def forward(self, x):
-#         # print(x.shape, self.pe[:x.size(0), :].shape)
-#         x = x + self.pe[:x.size(0), :]
-#         return self.dropout(x)
-
 
 class SimpleTransformerModel(nn.Module):
-    def __init__(self, input_dim=63, d_model=300, nhead=4, num_layers=2, dropout=0.2, max_len=5000):
+    def __init__(self, input_dim=63, d_model=64, nhead=4, num_layers=2, dropout=0.2, max_len=5000):
         super().__init__()
 
         self.input_dim = input_dim
         self.d_model = d_model
         self.max_len = max_len
 
-        self.input_embedding = nn.Linear(input_dim, d_model)
+        # self.input_embedding = nn.Linear(input_dim, d_model)
+        self.embedding_layer = nn.Embedding(
+            num_embeddings=64, embedding_dim=20)
+        # self.input_embedding = nn.Embedding(input_dim, d_model)
 
         self.encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model, nhead=nhead)
@@ -72,17 +27,25 @@ class SimpleTransformerModel(nn.Module):
 
         self.decoder = nn.Linear(d_model, 1)
 
-        self.positional_encoding = self.get_positional_encoding()
+        # self.positional_encoding = self.get_positional_encoding()
 
     def forward(self, x):
         # Reshape input tensor to (timepoints, batch_size, channels)
+        # print(x.shape)
+
+        x = x.view(-1, 148)
+        x = self.embedding_layer(x)
+        x = x.view(32, 63, 148, 20)
+        x = x.sum(dim=3)
         x = x.permute(2, 0, 1)  # Shape: (timepoints, batch_size, channels)
+        # print(x.shape)
+        print(x[0][0])
+        # x = self.input_embedding(x)
 
-        x = self.input_embedding(x)
-
-        x = x + self.positional_encoding[:x.size(0), :]
-
+        # x = x + self.positional_encoding[:x.size(0), :]
+        # print(x.shape)
         x = self.transformer_encoder(x)
+        # print(x.shape)
 
         x = x[-1, :, :]
 

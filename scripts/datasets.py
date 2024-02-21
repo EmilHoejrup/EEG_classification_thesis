@@ -50,7 +50,7 @@ class DiscretizedHimOrHer(Dataset):
                 discretized_sequence = self._permute(sequence)
                 image_sequence.append(discretized_sequence)
             discretized_X.append(image_sequence)
-        return torch.tensor(discretized_X, dtype=torch.float32)
+        return torch.tensor(discretized_X, dtype=torch.long)
 
     def _permute(self, X):
         X = X.tolist()

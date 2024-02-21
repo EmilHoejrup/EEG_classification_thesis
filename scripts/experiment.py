@@ -22,7 +22,7 @@ has_gpu = torch.cuda.is_available()
 device = 'cpu'
 EPOCHS = 300
 # downsampling with moving average
-" Hamming window?"
+# Hamming window?
 
 
 # %%
@@ -40,6 +40,7 @@ train_dataloader = DataLoader(
     dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
 val_dataloader = DataLoader(
     dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
+# %%
 model = SimpleTransformerModel(input_dim=63, d_model=300)
 loss_fun = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
@@ -55,8 +56,8 @@ train_dataloader = DataLoader(
     dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
 val_dataloader = DataLoader(
     dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
-
-model = SimpleTransformerModel(input_dim=63, d_model=300)
+# %%
+model = SimpleTransformerModel(input_dim=63, d_model=63, nhead=3)
 loss_fun = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
 trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
@@ -83,4 +84,129 @@ p_length = configs['him_or_her']['window_size']
 values = [0, 1]
 permutations = [list(perm)for perm in product(values, repeat=p_length)]
 # %%
+# %%
+
+# Example usage
+input_dim = 100   # Example vocabulary size
+d_model = 256     # Example embedding size
+batch_size = 32
+sequence_length = 10
+
+# Instantiate the embedding layer
+embedding_layer = nn.Embedding(input_dim, d_model)
+
+# Example input tensor
+input_tensor = torch.randint(0, input_dim, (batch_size, sequence_length))
+print(input_tensor.shape)
+# Pass input tensor through the embedding layer
+embedded_tensor = embedding_layer(input_tensor)
+
+print(embedded_tensor.shape)  # Output: torch.Size([32, 10, 256])
+
+# %%
+
+
+class SimpleTransformerModel(nn.Module):
+    def __init__(self, input_dim=63, d_model=30, nhead=3, num_layers=2, dropout=0.2, max_len=5000):
+        super().__init__()
+
+        self.input_dim = input_dim
+        self.d_model = d_model
+        self.max_len = max_len
+
+        self.input_embedding = nn.Linear(input_dim, d_model)
+        # self.input_embedding = nn.Embedding(input_dim, d_model)
+
+        self.encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead)
+        self.transformer_encoder = nn.TransformerEncoder(
+            self.encoder_layer, num_layers=num_layers)
+
+        self.decoder = nn.Linear(d_model, 1)
+
+        # self.positional_encoding = self.get_positional_encoding()
+
+    def forward(self, x):
+        # Reshape input tensor to (timepoints, batch_size, channels)
+        x = x.permute(2, 0, 1)  # Shape: (timepoints, batch_size, channels)
+        print(x.shape)
+
+        x = self.input_embedding(x)
+
+        # x = x + self.positional_encoding[:x.size(0), :]
+        print(x.shape)
+        x = self.transformer_encoder(x)
+        print(x.shape)
+
+        x = x[-1, :, :]
+
+        x = self.decoder(x)
+
+        return x.squeeze()
+
+
+# %%
+m = SimpleTransformerModel()
+# %%
+m(x)
+# %%
+
+# Example tensor shape: [batch, channels, timepoints]
+batch_size = 32
+channels = 63
+timepoints = 148
+
+# Example input tensor
+input_tensor = torch.randint(0, 100, (batch_size, channels, timepoints))
+
+# Reshape the tensor to [batch * channels, timepoints]
+reshaped_tensor = input_tensor.permute(
+    0, 1, 2).contiguous().view(-1, timepoints)
+
+# Define embedding dimension
+embedding_dim = 20
+
+# Instantiate the embedding layer
+embedding_layer = nn.Embedding(num_embeddings=100, embedding_dim=embedding_dim)
+
+# Pass reshaped tensor through the embedding layer
+embedded_tensor = embedding_layer(reshaped_tensor)
+print(embedded_tensor.shape)
+# Reshape the embedded tensor back to the original shape
+embedded_tensor = embedded_tensor.view(
+    batch_size, channels, timepoints, embedding_dim).permute(0, 1, 3, 2)
+
+print(embedded_tensor.shape)  # Output: torch.Size([32, 10, 256, 100])
+
+# %%
+
+# Example EEG data shape: [batch, channels, numericalized_timepoints]
+batch_size = 32
+num_channels = 63
+num_timepoints = 148
+embedding_dim = 20
+
+# Example numericalized timepoints
+numericalized_timepoints = torch.randint(
+    0, 64, (batch_size, num_channels, num_timepoints))
+
+# Define embedding layer
+embedding_layer = nn.Embedding(num_embeddings=64, embedding_dim=embedding_dim)
+
+# Reshape numericalized timepoints to [batch * channels * num_timepoints]
+reshaped_timepoints = numericalized_timepoints.view(-1, num_timepoints)
+
+# Embed timepoints
+embedded_timepoints = embedding_layer(reshaped_timepoints)
+
+# Reshape embedded timepoints back to [batch, channels, num_timepoints, embedding_dim]
+embedded_timepoints = embedded_timepoints.view(
+    batch_size, num_channels, num_timepoints, embedding_dim)
+
+# Sum the embeddings over the timepoints dimension
+# You can use other aggregation methods as well
+embedded_timepoints = embedded_timepoints.sum(dim=3)
+
+print(embedded_timepoints.shape)  # Output: torch.Size([32, 10, 256])
+
 # %%
