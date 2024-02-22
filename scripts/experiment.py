@@ -41,7 +41,7 @@ train_dataloader = DataLoader(
 val_dataloader = DataLoader(
     dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
 # %%
-model = SimpleTransformerModel(input_dim=63, d_model=300)
+model = SimpleTransformerModelVanilla(input_dim=63, d_model=300)
 loss_fun = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
 trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
@@ -208,5 +208,92 @@ embedded_timepoints = embedded_timepoints.view(
 embedded_timepoints = embedded_timepoints.sum(dim=3)
 
 print(embedded_timepoints.shape)  # Output: torch.Size([32, 10, 256])
+
+# %%
+# %%
+train_dataset = BNCI2014_001(train=True)
+val_dataset = BNCI2014_001(train=False)
+
+train_dataloader = DataLoader(
+    dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True)
+val_dataloader = DataLoader(
+    dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True)
+# %%
+x, y = next(iter(train_dataloader))
+x[1][1], y[1]
+# %%
+# model = SimpleTransformerModelB(input_dim=22, d_model=22, nhead=2)
+# model(x)
+model = SimpleTransformerModelVanilla(input_dim=22)
+# %%
+loss_fun = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
+trainer = BinaryClassifierTrainer(model, train_loader=train_dataloader,
+                                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer.fit(epochs=20)
+trainer.plot_train_val_scores()
+
+# %%
+model
+# %%
+
+
+class SimpleTransformerModelB(nn.Module):
+    def __init__(self, input_dim=63, d_model=64, nhead=4, num_layers=2, dropout=0.2, max_len=5000):
+        super().__init__()
+
+        self.input_dim = input_dim
+        self.d_model = d_model
+        self.max_len = max_len
+
+        # self.input_embedding = nn.Linear(input_dim, d_model)
+        self.embedding_layer = nn.Embedding(
+            num_embeddings=64, embedding_dim=64)
+        # self.input_embedding = nn.Embedding(input_dim, d_model)
+
+        self.encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead)
+        self.transformer_encoder = nn.TransformerEncoder(
+            self.encoder_layer, num_layers=num_layers)
+
+        self.decoder = nn.Linear(d_model, 1)
+
+        # self.positional_encoding = self.get_positional_encoding()
+
+    def forward(self, x):
+        # Reshape input tensor to (timepoints, batch_size, channels)
+        # print(x.shape)
+
+        x = x.view(-1, 499)
+        x = self.embedding_layer(x)
+        print(x.shape)
+        x = x.view(32, 22, 499, 64)
+        x = x.sum(dim=2)
+        x = x.permute(2, 0, 1)  # Shape: (timepoints, batch_size, channels)
+        # print(x.shape)
+        # print(x[0][0])
+        # x = self.input_embedding(x)
+
+        # x = x + self.positional_encoding[:x.size(0), :]
+        # print(x.shape)
+        x = self.transformer_encoder(x)
+        # print(x.shape)
+
+        x = x[-1, :, :]
+
+        x = self.decoder(x)
+
+        return x.squeeze()
+
+    def get_positional_encoding(self):
+        pe = torch.zeros(self.max_len, self.d_model)
+        position = torch.arange(
+            0, self.max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(
+            0, self.d_model, 2).float() * (-math.log(10000.0) / self.d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(1)  # Add batch dimension
+        return pe
 
 # %%

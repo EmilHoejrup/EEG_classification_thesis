@@ -17,7 +17,7 @@ class SimpleTransformerModel(nn.Module):
 
         # self.input_embedding = nn.Linear(input_dim, d_model)
         self.embedding_layer = nn.Embedding(
-            num_embeddings=64, embedding_dim=20)
+            num_embeddings=64, embedding_dim=64)
         # self.input_embedding = nn.Embedding(input_dim, d_model)
 
         self.encoder_layer = nn.TransformerEncoderLayer(
@@ -35,17 +35,64 @@ class SimpleTransformerModel(nn.Module):
 
         x = x.view(-1, 148)
         x = self.embedding_layer(x)
-        x = x.view(32, 63, 148, 20)
-        x = x.sum(dim=3)
+        x = x.view(32, 63, 148, 64)
+        x = x.sum(dim=2)
         x = x.permute(2, 0, 1)  # Shape: (timepoints, batch_size, channels)
         # print(x.shape)
-        print(x[0][0])
+        # print(x[0][0])
         # x = self.input_embedding(x)
 
         # x = x + self.positional_encoding[:x.size(0), :]
         # print(x.shape)
         x = self.transformer_encoder(x)
         # print(x.shape)
+
+        x = x[-1, :, :]
+
+        x = self.decoder(x)
+
+        return x.squeeze()
+
+    def get_positional_encoding(self):
+        pe = torch.zeros(self.max_len, self.d_model)
+        position = torch.arange(
+            0, self.max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(
+            0, self.d_model, 2).float() * (-math.log(10000.0) / self.d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(1)  # Add batch dimension
+        return pe
+
+
+class SimpleTransformerModelVanilla(nn.Module):
+    def __init__(self, input_dim=63, d_model=300, nhead=4, num_layers=2, dropout=0.2, max_len=5000):
+        super().__init__()
+
+        self.input_dim = input_dim
+        self.d_model = d_model
+        self.max_len = max_len
+
+        self.input_embedding = nn.Linear(input_dim, d_model)
+
+        self.encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=nhead)
+        self.transformer_encoder = nn.TransformerEncoder(
+            self.encoder_layer, num_layers=num_layers)
+
+        self.decoder = nn.Linear(d_model, 1)
+
+        self.positional_encoding = self.get_positional_encoding()
+
+    def forward(self, x):
+        # Reshape input tensor to (timepoints, batch_size, channels)
+        x = x.permute(2, 0, 1)  # Shape: (timepoints, batch_size, channels)
+
+        x = self.input_embedding(x)
+
+        x = x + self.positional_encoding[:x.size(0), :]
+
+        x = self.transformer_encoder(x)
 
         x = x[-1, :, :]
 
