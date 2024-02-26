@@ -4,7 +4,28 @@ him_or_her:
   window_size: 6
   stride: 2
 
+BNCI2014_001:
+  batch_size: 32
+  window_size: 10
+  stride: 2
+
 # Models
 vanilla_transformer:
   hidden_size: 300
   num_attention_heads: 3
+
+TransWithEmbeddingV1:
+  model_params:
+    d_model: 22
+    nhead: 2
+    num_layers: 2
+    emb_dim: 64
+    vocab_size: 64
+
+BNCTransWithEmbeddingV1:
+  model_params:
+    d_model: 22
+    nhead: 2
+    num_layers: 2
+    emb_dim: 64
+    vocab_size: 497
