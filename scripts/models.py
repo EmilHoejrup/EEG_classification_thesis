@@ -175,6 +175,60 @@ class VanillaTransformerModel(nn.Module):
         x = self.decoder(x[:, -1, :])
         return x.squeeze()
 
+
+class EEGNet(nn.Module):
+    def __init__(self, num_classes):
+        super(EEGNet, self).__init__()
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=(
+            1, 51), stride=(1, 1), padding=(0, 25), bias=False)
+        self.bn1 = nn.BatchNorm2d(
+            16, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=(
+            2, 1), stride=(1, 1), groups=16, bias=False)
+        self.bn2 = nn.BatchNorm2d(
+            32, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+        self.pooling = nn.AvgPool2d(
+            kernel_size=(1, 4), stride=(1, 4), padding=0)
+        self.conv3 = nn.Conv2d(32, 32, kernel_size=(
+            1, 15), stride=(1, 1), padding=(0, 7), bias=False)
+        self.bn3 = nn.BatchNorm2d(
+            32, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+        self.conv4 = nn.Conv2d(32, 64, kernel_size=(
+            1, 3), stride=(1, 1), padding=(0, 1), bias=False)
+        self.bn4 = nn.BatchNorm2d(
+            64, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+        self.conv5 = nn.Conv2d(64, 2, kernel_size=(
+            1, 3), stride=(1, 1), padding=(0, 1), bias=False)
+        self.bn5 = nn.BatchNorm2d(
+            2, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)  # Add channel dimension
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = torch.relu(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = torch.relu(x)
+        x = self.pooling(x)
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = torch.relu(x)
+        x = self.conv4(x)
+        x = self.bn4(x)
+        x = torch.relu(x)
+        x = self.conv5(x)
+        x = self.bn5(x)
+        x = torch.mean(x, dim=(2, 3))  # Global average pooling
+
+        # Apply softmax
+        x = self.softmax(x)
+        x = x[:, 0]
+        # Get class predictions by taking the index of the maximum value
+
+        return x
+
 # FROM HUGGINGFACE INTRO TO NLP TRANSFORMERS
 
 

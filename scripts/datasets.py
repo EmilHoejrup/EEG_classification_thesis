@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader
 with open(CONFIG_FILE, 'r') as file:
     configs = yaml.safe_load(file)
 from support.utils import *
+from braindecode.datautil import load_concat_dataset
 
 X_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'X.npy.gz'
 Y_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'Y.p'
@@ -30,14 +31,28 @@ def read_X_and_y(x_file, y_file):
     return X, Y
 
 
+class BNCI_4_CLASS():
+    def __init__(self):
+        if not BNCI_4_CLASS_DIR.exists():
+            fetch_preprocess_and_save_BNCI2014_001_4_classes()
+        self.dataset = load_concat_dataset(
+            BNCI_4_CLASS_DIR, preload=False, target_name=None)
+
+    def get_train_and_test_data(self):
+        splitted = self.dataset.split('session')
+        return splitted['0train'], splitted['1test']
+
+
 class BNCI2014_001_DISCRETIZED(Dataset):
     def __init__(self, train=True, val_split=0.2):
         self.train = train
         if not X_BNCI2015_001.exists():
             fetch_BNCI2014_001()
         self.X, self.Y = read_X_and_y(X_BNCI2015_001, Y_BNCI2015_001)
+        # self.X = F.avg_pool1d(self.X, 3, 2)
+        self.X = self.X[:, :, :300]
         self.Y = self.Y.astype(float)
-        self.X, self.Y = self.X[:300], self.Y[:300]
+        # self.X, self.Y = self.X[:300], self.Y[:300]
         self.X = self._discretize(self.X)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=val_split, random_state=43)
@@ -185,14 +200,16 @@ class BNCI2014_001(Dataset):
         if not X_BNCI2015_001.exists():
             fetch_BNCI2014_001()
         self.X, self.Y = read_X_and_y(X_BNCI2015_001, Y_BNCI2015_001)
-        self.X, self.Y = self.X[:300], self.Y[:300]
+        # self.X, self.Y = self.X[:300], self.Y[:300]
+        self.X = self.X[:, :, 500:850]
+        self.X = F.avg_pool1d(self.X, 3, 2)
         self.X = self.X.type(torch.float32)
         self.Y = self.Y.astype(float)
 
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=val_split, random_state=43)
-        self.X_train = self.z_score_normalization(self.X_train)
-        self.X_val = self.z_score_normalization(self.X_val)
+        # self.X_train = self.z_score_normalization(self.X_train)
+        # self.X_val = self.z_score_normalization(self.X_val)
 
     def __len__(self):
         if self.train:
