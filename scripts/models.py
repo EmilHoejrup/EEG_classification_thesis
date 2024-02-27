@@ -22,7 +22,7 @@ class TransWithEmbeddingV1(nn.Module):
         self.transformer_encoder = nn.TransformerEncoder(
             self.encoder_layer, num_layers=num_layers)
 
-        self.decoder = nn.Linear(d_model, 1)
+        self.decoder = nn.Linear(d_model, 4)
 
     def forward(self, x):
         # Reshape input tensor to (timepoints, batch_size, channels)
@@ -124,7 +124,7 @@ class SimpleTransformerModelVanilla(nn.Module):
         self.transformer_encoder = nn.TransformerEncoder(
             self.encoder_layer, num_layers=num_layers)
 
-        self.decoder = nn.Linear(d_model, 1)
+        self.decoder = nn.Linear(d_model, 4)
 
         self.positional_encoding = self.get_positional_encoding()
 
@@ -221,10 +221,12 @@ class EEGNet(nn.Module):
         x = self.conv5(x)
         x = self.bn5(x)
         x = torch.mean(x, dim=(2, 3))  # Global average pooling
+        print(x.shape)
+        print(x)
 
         # Apply softmax
         x = self.softmax(x)
-        x = x[:, 0]
+        # x = x[:, 0]
         # Get class predictions by taking the index of the maximum value
 
         return x
