@@ -22,7 +22,7 @@ class TransWithEmbeddingV1(nn.Module):
         self.transformer_encoder = nn.TransformerEncoder(
             self.encoder_layer, num_layers=num_layers)
 
-        self.decoder = nn.Linear(d_model, 4)
+        self.decoder = nn.Linear(d_model, 2)
 
     def forward(self, x):
         # Reshape input tensor to (timepoints, batch_size, channels)
@@ -124,7 +124,7 @@ class SimpleTransformerModelVanilla(nn.Module):
         self.transformer_encoder = nn.TransformerEncoder(
             self.encoder_layer, num_layers=num_layers)
 
-        self.decoder = nn.Linear(d_model, 4)
+        self.decoder = nn.Linear(d_model, 2)
 
         self.positional_encoding = self.get_positional_encoding()
 

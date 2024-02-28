@@ -24,11 +24,11 @@ Y_BNCI2015_001 = BNCI2014_001_DIR / 'Y.p'
 BNCI_4_CLASS_DIR = DATA_DIR / 'BNCI_4_CLASS'
 
 
-def fetch_preprocess_and_save_BNCI2014_001_4_classes():
-    dataset = MOABBDataset(dataset_name='BNCI2014_001', subject_ids=[3])
+def fetch_preprocess_and_save_BNCI2014_001_4_classes(train=True):
+    dataset = MOABBDataset(dataset_name='BNCI2014_001', subject_ids=[1, 2, 3])
     dataset = preprocess_dataset(dataset)
     dataset = create_windows_dataset(dataset)
-    save_BNCI_4_class(dataset)
+    save_BNCI_4_class(dataset, train)
 
 
 def preprocess_dataset(dataset):
@@ -79,7 +79,12 @@ def create_windows_dataset(dataset):
     return windows_dataset
 
 
-def save_BNCI_4_class(dataset):
+def save_BNCI_4_class(dataset, train):
+    splitted = dataset.split('session')
+    if train:
+        dataset = splitted['0train']
+    else:
+        dataset = splitted['1test']
     BNCI_4_CLASS_DIR.mkdir(parents=True, exist_ok=True)
     dataset.save(
         path=BNCI_4_CLASS_DIR,
@@ -118,3 +123,65 @@ def plot_train_val_scores(train_loss, train_acc, val_loss, val_acc):
     plt.title('Accuracy')
     plt.xlabel('Epochs')
     plt.legend()
+
+###### OLD STUFF ######
+# %%
+
+
+# class DiscretizeTransformer:
+#     def __init__(self, window_size, stride):
+#         values = [1, 0]
+#         self.window_size = window_size
+#         self.stride = stride
+#         self.permutations = [list(perm)
+#                              for perm in product(values, repeat=window_size)]
+
+#     def __call__(self, channels):
+#         transformed_channels = []
+#         for sequence in channels:
+#             new_sequence = self._permute(sequence)
+#             transformed_channels.append(new_sequence)
+
+#         return transformed_channels
+
+#     def _permute(self, sequence):
+#         new_sequence = []
+#         sequence[0] = 0
+#         for i in range(1, len(sequence)):
+#             if sequence[i] > sequence[i-1]:
+#                 sequence[i] = 1
+#             else:
+#                 sequence[i] = 0
+#         # loop through the with the specified window size and stride as step
+#         for i in range(0, len(sequence) - self.window_size, self.stride):
+#             window = list(sequence[i:(i+self.window_size)])
+#             new_sequence.append(self.permutations.index(window))
+#         return new_sequence
+
+
+# custom_transform = DiscretizeTransformer(6, 2)
+
+
+# def custom_collate(batch):
+#     x, y, _ = zip(*batch)
+#     x = list(x)
+#     # print(x)
+#     # print(y)
+#     # print(_)
+
+#     for i in range(len(batch)):
+#         x[i] = (custom_transform(x[i]))
+#     x = torch.tensor(x, dtype=torch.long)
+#     y = torch.tensor(y)
+#     _ = torch.tensor(_)
+#     return x, y, _
+    # print(batch)
+    # transformed_batch = [
+    #     custom_transform(sample) for sample in batch]
+
+    # print(type(transformed_batch))
+    # # print(len(transformed_batch))
+    # # # transformed_batch = [torch.tensor(sample) for sample in transformed_batch]
+    # # t = torch.tensor(transformed_batch[0])
+    # # print(t)
+    # return batch

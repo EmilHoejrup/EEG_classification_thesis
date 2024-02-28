@@ -55,12 +55,13 @@ class BinaryClassifierTrainer(nn.Module):
             self.optimizer.step()
 
         train_loss /= len(self.train_loader)
-        train_acc /= len(self.train_loader)
+        train_acc /= len(self.train_loader.dataset)
         self.train_losses.append(train_loss)
         self.train_accuracies.append(train_acc)
 
         if (print_metrics):
-            print(f"Train loss: {train_loss:.5f} | Train acc: {train_acc:.5f}")
+            print(
+                f"Train loss: {train_loss:.5f} | Train acc: {train_acc*100:.5f}")
 
     def _val_step(self, print_metrics):
         val_loss, val_acc = 0, 0
@@ -80,11 +81,11 @@ class BinaryClassifierTrainer(nn.Module):
 
             # Calculate test loss and accuracy average per batch
             val_loss /= len(self.val_loader)
-            val_acc /= len(self.val_loader)
+            val_acc /= len(self.val_loader.dataset)
             self.val_losses.append(val_loss)
             self.val_accuracies.append(val_acc)
         if (print_metrics):
-            print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc:.5f}")
+            print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc*100:.5f}")
 
     def _accuracy_fun(self, y_pred, y_true):
         correct = torch.eq(y_true, y_pred).sum().item()
@@ -124,7 +125,7 @@ class MultiLabelClassifierTrainer(nn.Module):
     def _train_step(self, print_metrics):
         train_loss, train_acc = 0, 0
         self.model.train()
-        for batch, (X, y, _) in enumerate(self.train_loader):
+        for batch, (X, y) in enumerate(self.train_loader):
             X, y = X.to(self.device), y.to(self.device)
 
             # Forward pass
@@ -140,19 +141,20 @@ class MultiLabelClassifierTrainer(nn.Module):
             self.optimizer.step()
 
         train_loss /= len(self.train_loader)
-        train_acc /= len(self.train_loader)
+        train_acc /= len(self.train_loader.dataset)
         self.train_losses.append(train_loss)
         self.train_accuracies.append(train_acc)
 
         if (print_metrics):
-            print(f"Train loss: {train_loss:.5f} | Train acc: {train_acc:.5f}")
+            print(
+                f"Train loss: {train_loss:.5f} | Train acc: {train_acc*100:.5f}")
 
     def _val_step(self, print_metrics):
         val_loss, val_acc = 0, 0
         self.model.eval()
         with torch.inference_mode():
             # for X, y in data_loader:
-            for batch, (X, y, _) in enumerate(self.val_loader):
+            for batch, (X, y) in enumerate(self.val_loader):
                 X, y = X.to(self.device), y.to(self.device)
                 # Forward pass
                 y_logits = self.model(X)
@@ -165,8 +167,8 @@ class MultiLabelClassifierTrainer(nn.Module):
 
             # Calculate test loss and accuracy average per batch
             val_loss /= len(self.val_loader)
-            val_acc /= len(self.val_loader)
+            val_acc /= len(self.val_loader.dataset)
             self.val_losses.append(val_loss)
             self.val_accuracies.append(val_acc)
         if (print_metrics):
-            print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc:.5f}")
+            print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc*100:.5f}")
