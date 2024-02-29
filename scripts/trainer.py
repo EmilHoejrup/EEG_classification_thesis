@@ -129,6 +129,10 @@ class MultiLabelClassifierTrainer(nn.Module):
             X, y = X.to(self.device), y.to(self.device)
 
             # Forward pass
+            # X = X.reshape()
+            # X = torch.transpose(X, 1, 2)
+            # print(X.shape)
+            X = torch.reshape(X, (-1, 561, 22))
             y_logits = self.model(X)
 
             # Calculate metrics
@@ -141,7 +145,7 @@ class MultiLabelClassifierTrainer(nn.Module):
             self.optimizer.step()
 
         train_loss /= len(self.train_loader)
-        train_acc /= len(self.train_loader.dataset)
+        train_acc /= (len(self.train_loader.dataset)-25)
         self.train_losses.append(train_loss)
         self.train_accuracies.append(train_acc)
 
@@ -157,6 +161,7 @@ class MultiLabelClassifierTrainer(nn.Module):
             for batch, (X, y) in enumerate(self.val_loader):
                 X, y = X.to(self.device), y.to(self.device)
                 # Forward pass
+                X = torch.reshape(X, (-1, 561, 22))
                 y_logits = self.model(X)
                 val_acc += (y_logits.argmax(1) ==
                             y).type(torch.float).sum().item()
@@ -167,7 +172,7 @@ class MultiLabelClassifierTrainer(nn.Module):
 
             # Calculate test loss and accuracy average per batch
             val_loss /= len(self.val_loader)
-            val_acc /= len(self.val_loader.dataset)
+            val_acc /= (len(self.val_loader.dataset)-25)
             self.val_losses.append(val_loss)
             self.val_accuracies.append(val_acc)
         if (print_metrics):

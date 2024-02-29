@@ -84,8 +84,9 @@ class BNCI_LEFT_RIGHT(Dataset):
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
         self.X = self._discretize(self.X)
+        self.X = self.X.to(torch.float32)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X, self.Y, test_size=0.2, random_state=43)
+            self.X, self.Y, test_size=0.3, random_state=43)
 
     def _discretize(self, X):
         self.p_length = configs['BNCI2014_001']['window_size']
