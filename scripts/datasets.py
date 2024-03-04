@@ -50,7 +50,7 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
         self.X = F.avg_pool1d(self.X, 3, 2)
         # self.X = F.avg_pool1d(self.X, 4, 8)
 
-        # self.X = self.X[..., :128]
+        self.X = self.X[..., :128]
 
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
@@ -71,11 +71,13 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
 
 
 class BNCI_LEFT_RIGHT(Dataset):
-    def __init__(self, train):
+    def __init__(self, train, window_size, stride):
         if not BNCI_DECONSTRUCTED.exists():
             bnci_4 = BNCI_4_CLASS()
             deconstruct_moabb_dataset(bnci_4, BNCI_DECONSTRUCTED)
         self.train = train
+        self.window_size = window_size
+        self.stride = stride
 
         samples_0 = torch.load(BNCI_DECONSTRUCTED / '0_samples.pth')
         samples_1 = torch.load(BNCI_DECONSTRUCTED / '1_samples.pth')
@@ -86,16 +88,20 @@ class BNCI_LEFT_RIGHT(Dataset):
 
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
-        self.X = self._discretize(self.X)
-        self.X = self.X.to(torch.float32)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=0.3, random_state=43)
+        if self.train:
+            self.X_train = self._discretize(self.X_train)
+            self.X_train = self.X_train.to(torch.float32)
+        else:
+            self.X_val = self._discretize(self.X_val)
+            self.X_val = self.X_val.to(torch.float32)
 
     def _discretize(self, X):
-        self.p_length = configs['BNCI2014_001']['window_size']
+        # self.p_length = configs['BNCI2014_001']['window_size']
         values = [0, 1]
         self.permutations = [list(perm)
-                             for perm in product(values, repeat=self.p_length)]
+                             for perm in product(values, repeat=self.window_size)]
         images, channels, timepoints = X.shape
         discretized_X = []
         for image in range(images):
@@ -118,8 +124,8 @@ class BNCI_LEFT_RIGHT(Dataset):
                 X[i] = 0
         # print(X)
 
-        for i in range(0, len(X) - self.p_length, 2):
-            window = X[i:(i+self.p_length)]
+        for i in range(0, len(X) - self.window_size, self.stride):
+            window = X[i:(i+self.window_size)]
             new_sequence.append(self.permutations.index(window))
         new_sequence.append(0)
 
