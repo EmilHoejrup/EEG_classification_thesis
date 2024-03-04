@@ -285,13 +285,13 @@ class Encoder(nn.Module):
 
 class Transformer(nn.Module):
 
-    def __init__(self, device, timepoints, d_model=100, n_head=4, max_len=1225, seq_len=200,
+    def __init__(self, device, d_model=100, n_head=4, max_len=1225, seq_len=200,
                  ffn_hidden=128, n_layers=2, drop_prob=0.1, details=False, n_channels=22, n_classes=2):
         super().__init__()
         self.device = device
         self.details = details
         self.n_channels = n_channels
-        self.timepoints = timepoints
+        self.seq_len = seq_len
         self.encoder_input_layer = nn.Linear(
             in_features=n_channels,
             out_features=d_model
@@ -310,17 +310,18 @@ class Transformer(nn.Module):
             seq_len=seq_len, d_model=d_model, details=details, n_classes=n_classes)
 
     def forward(self, src):
-        src = torch.reshape(src, (-1, self.timepoints, self.n_channels))
-        if self.details:
-            print('before input layer: ' + str(src.size()))
-        src = self.encoder_input_layer(src)
-        if self.details:
-            print('after input layer: ' + str(src.size()))
-        src = self.pos_emb(src)
-        if self.details:
-            print('after pos_emb: ' + str(src.size()))
-        enc_src = self.encoder(src)
-        cls_res = self.classHead(enc_src)
-        if self.details:
-            print('after cls_res: ' + str(cls_res.size()))
-        return cls_res
+        # src = torch.reshape(src, (-1, self.seq_len, self.n_channels))
+        # if self.details:
+        #     print('before input layer: ' + str(src.size()))
+        # src = self.encoder_input_layer(src)
+        # if self.details:
+        #     print('after input layer: ' + str(src.size()))
+        # src = self.pos_emb(src)
+        # if self.details:
+        #     print('after pos_emb: ' + str(src.size()))
+        # enc_src = self.encoder(src)
+        # cls_res = self.classHead(enc_src)
+        # if self.details:
+        #     print('after cls_res: ' + str(cls_res.size()))
+        # return cls_res
+        return self.classHead(self.encoder(self.pos_emb(self.encoder_input_layer(torch.reshape(src, (-1, self.seq_len, self.n_channels))))))

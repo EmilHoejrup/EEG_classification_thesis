@@ -97,6 +97,9 @@ class BNCI_LEFT_RIGHT(Dataset):
             self.X_val = self._discretize(self.X_val)
             self.X_val = self.X_val.to(torch.float32)
 
+    def get_X_shape(self):
+        return self.X_train.shape
+
     def _discretize(self, X):
         # self.p_length = configs['BNCI2014_001']['window_size']
         values = [0, 1]

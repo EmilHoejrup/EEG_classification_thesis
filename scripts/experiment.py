@@ -18,17 +18,17 @@ from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
 from torcheeg.models import SimpleViT, ATCNet, VanillaTransformer, EEGNet
 from braindecode.models import ShallowFBCSPNet, EEGConformer
+from torch.optim.lr_scheduler import LRScheduler
 from new_model import *
 with open(CONFIG_FILE, 'r') as file:
     configs = yaml.safe_load(file)
-BATCH_SIZE = configs['him_or_her']['batch_size']
+# BATCH_SIZE = configs['him_or_her']['batch_size']
 BATCH_SIZE = 64
-CHANNELS = 63
-TIMEPOINTS = 300
-INPUT_SIZE = CHANNELS * TIMEPOINTS
+
 has_gpu = torch.cuda.is_available()
 device = 'cpu'
-EPOCHS = 50
+LEARNING_RATE = 0.001
+EPOCHS = 10
 # downsampling with moving average
 # Hamming window?
 # %%
@@ -46,8 +46,10 @@ val_dataloader = DataLoader(
 #                         input_window_samples=1125, final_conv_length='auto')
 model = Transformer(device='cpu', timepoints=561, seq_len=561)
 loss_fun = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
-trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader,
+optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                       T_max=EPOCHS - 1)
+trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
                                       val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=EPOCHS)
 trainer.plot_train_val_scores()
@@ -78,8 +80,11 @@ model = Transformer(device='cpu', timepoints=562,
 # model = TinyVGG(22,100,2)
 loss_fun = nn.CrossEntropyLoss()
 # optimizer = torch.optim.AdamW(params=model.parameters(), lr=0.0625 * 0.01)
-optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
-trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader,
+# optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                       T_max=EPOCHS - 1)
+trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
                                       val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=EPOCHS)
 trainer.plot_train_val_scores()

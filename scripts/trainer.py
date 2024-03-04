@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
 from support.utils import plot_train_val_scores
+from torch.optim.lr_scheduler import LRScheduler
 
 
 class BinaryClassifierTrainer(nn.Module):
@@ -11,6 +12,7 @@ class BinaryClassifierTrainer(nn.Module):
                  val_loader: torch.utils.data.DataLoader,
                  loss_fun: torch.nn.Module,
                  optimizer: torch.optim.Optimizer,
+                 scheduler: LRScheduler,
                  device: torch.device):
         super().__init__()
         self.model = model
@@ -23,6 +25,7 @@ class BinaryClassifierTrainer(nn.Module):
         self.train_accuracies = []
         self.val_losses = []
         self.val_accuracies = []
+        self.scheduler = scheduler
 
     def fit(self, epochs=5, print_metrics=True):
         for _ in tqdm(range(epochs)):
@@ -54,6 +57,7 @@ class BinaryClassifierTrainer(nn.Module):
             loss.backward()
             self.optimizer.step()
 
+        self.scheduler.step()
         train_loss /= len(self.train_loader)
         train_acc /= len(self.train_loader.dataset)
         self.train_losses.append(train_loss)
@@ -99,7 +103,9 @@ class MultiLabelClassifierTrainer(nn.Module):
                  val_loader: torch.utils.data.DataLoader,
                  loss_fun: torch.nn.Module,
                  optimizer: torch.optim.Optimizer,
+                 scheduler: LRScheduler,
                  device: torch.device):
+
         super().__init__()
         self.model = model
         self.train_loader = train_loader
@@ -111,11 +117,15 @@ class MultiLabelClassifierTrainer(nn.Module):
         self.train_accuracies = []
         self.val_losses = []
         self.val_accuracies = []
+        self.scheduler = scheduler
 
     def fit(self, epochs=5, print_metrics=True):
         for _ in tqdm(range(epochs)):
             self._train_step(print_metrics)
             self._val_step(print_metrics)
+
+    def get_metrics(self):
+        return self.train_losses, self.train_accuracies, self.val_losses, self.val_accuracies
 
     def plot_train_val_scores(self):
         with torch.inference_mode():
@@ -144,6 +154,7 @@ class MultiLabelClassifierTrainer(nn.Module):
             loss.backward()
             self.optimizer.step()
 
+        self.scheduler.step()
         train_loss /= len(self.train_loader)
         train_acc /= (len(self.train_loader.dataset))
         self.train_losses.append(train_loss)
