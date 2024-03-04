@@ -157,6 +157,9 @@ class MultiLabelClassifierTrainer(nn.Module):
         self.scheduler.step()
         train_loss /= len(self.train_loader)
         train_acc /= (len(self.train_loader.dataset))
+        # self.log('train loss', train_loss)
+        # self.log('train accuracy', train_acc)
+
         self.train_losses.append(train_loss)
         self.train_accuracies.append(train_acc)
 
@@ -184,6 +187,8 @@ class MultiLabelClassifierTrainer(nn.Module):
             # Calculate test loss and accuracy average per batch
             val_loss /= len(self.val_loader)
             val_acc /= (len(self.val_loader.dataset))
+            # self.log('validation loss', val_loss)
+            # self.log('validation accuracy', val_acc)
             self.val_losses.append(val_loss)
             self.val_accuracies.append(val_acc)
         if (print_metrics):

@@ -3,9 +3,15 @@
 @when : 2019-10-22
 @homepage : https://github.com/gusdnd852
 """
+from torchmetrics import Accuracy
+import torch.nn.functional as F
+from typing import Mapping
+from pyparsing import Any
 import torch
-from torch import nn
+from torch.utils.data import DataLoader
+from torch import Tensor, nn
 import math
+import pytorch_lightning as L
 
 
 from torch import nn
@@ -261,7 +267,7 @@ class ScaleDotProductAttention(nn.Module):
 
 class Encoder(nn.Module):
 
-    def __init__(self, d_model, ffn_hidden, n_head, n_layers, drop_prob, details, device):
+    def __init__(self, d_model, ffn_hidden, n_head, n_layers, drop_prob, details):
         super().__init__()
 
         self.layers = nn.ModuleList([EncoderLayer(d_model=d_model,
@@ -325,3 +331,99 @@ class Transformer(nn.Module):
         #     print('after cls_res: ' + str(cls_res.size()))
         # return cls_res
         return self.classHead(self.encoder(self.pos_emb(self.encoder_input_layer(torch.reshape(src, (-1, self.seq_len, self.n_channels))))))
+
+
+class LitTransformer(L.LightningModule):
+
+    def __init__(self, train_dataset, val_dataset, batch_size=64, d_model=100, n_head=4, max_len=1225, seq_len=200,
+                 ffn_hidden=128, n_layers=2, drop_prob=0.1, details=False, n_channels=22, n_classes=2, learning_rate=0.001):
+        super().__init__()
+        self.details = details
+        self.batch_size = batch_size
+        self.train_dataset = train_dataset
+        self.learning_rate = learning_rate
+        self.val_dataset = val_dataset
+        self.n_channels = n_channels
+        # self.validation_step_outputs = []
+        self.seq_len = seq_len
+        self.accuracy = Accuracy("multiclass", num_classes=n_classes)
+
+        self.encoder_input_layer = nn.Linear(
+            in_features=n_channels,
+            out_features=d_model
+        )
+
+        self.pos_emb = PostionalEncoding(
+            max_seq_len=max_len, batch_first=False, d_model=d_model, dropout=0.1)
+        self.encoder = Encoder(d_model=d_model,
+                               n_head=n_head,
+                               ffn_hidden=ffn_hidden,
+                               drop_prob=drop_prob,
+                               n_layers=n_layers,
+                               details=details)
+        self.classHead = ClassificationHead(
+            seq_len=seq_len, d_model=d_model, details=details, n_classes=n_classes)
+
+    def forward(self, src):
+        # src = torch.reshape(src, (-1, self.seq_len, self.n_channels))
+        # if self.details:
+        #     print('before input layer: ' + str(src.size()))
+        # src = self.encoder_input_layer(src)
+        # if self.details:
+        #     print('after input layer: ' + str(src.size()))
+        # src = self.pos_emb(src)
+        # if self.details:
+        #     print('after pos_emb: ' + str(src.size()))
+        # enc_src = self.encoder(src)
+        # cls_res = self.classHead(enc_src)
+        # if self.details:
+        #     print('after cls_res: ' + str(cls_res.size()))
+        # return cls_res
+        return self.classHead(self.encoder(self.pos_emb(self.encoder_input_layer(torch.reshape(src, (-1, self.seq_len, self.n_channels))))))
+
+    def training_step(self, batch, batch_idx):
+        X, y = batch
+        outputs = self(X)
+        loss = F.cross_entropy(outputs, y)
+        pred = outputs.argmax(dim=1)
+        acc = self.accuracy(pred, y)
+
+        # Logging for mlflow
+        self.log('train_loss', loss, on_epoch=True)
+        self.log('train_accuracy', acc, on_epoch=True)
+        # tensorboard_logs = {'train_loss': loss}
+        # use key 'log'
+        # return {"loss": loss, 'log': tensorboard_logs}
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        X, y = batch
+        outputs = self(X)
+        loss = F.cross_entropy(outputs, y)
+        pred = outputs.argmax(dim=1)
+        acc = self.accuracy(pred, y)
+
+        # Logging for mlflow
+        self.log('validation_loss', loss)
+        self.log('validation_accuracy', acc)
+        # self.validation_step_outputs.append(loss)
+        # return {"val_loss": loss}
+        return loss
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(params=self.parameters(), lr=self.learning_rate)
+
+    def train_dataloader(self):
+        train_loader = DataLoader(
+            dataset=self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=7)
+        return train_loader
+
+    def val_dataloader(self):
+        val_loader = DataLoader(dataset=self.val_dataset,
+                                batch_size=self.batch_size, shuffle=False, num_workers=7)
+        return val_loader
+
+    # def on_validation_epoch_end(self):
+    #     epoch_average = torch.stack(self.validation_step_outputs).mean()
+    #     self.log("validation_epoch_average", epoch_average)
+    #     self.validation_step_outputs.clear()  # free memory
