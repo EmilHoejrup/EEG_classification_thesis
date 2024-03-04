@@ -48,6 +48,9 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
         self.Y = torch.cat((labels_0, labels_1), dim=0)
         self.X = self.X.to(torch.float32)
         self.X = F.avg_pool1d(self.X, 3, 2)
+        # self.X = F.avg_pool1d(self.X, 4, 8)
+
+        # self.X = self.X[..., :128]
 
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
