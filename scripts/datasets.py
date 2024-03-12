@@ -6,6 +6,7 @@ import pickle as p
 import gzip
 from pathlib import Path
 from itertools import product
+from sklearn.cluster import KMeans
 from support.constants import *
 import yaml
 from sklearn.preprocessing import StandardScaler
@@ -47,15 +48,32 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
         self.X = torch.cat((samples_0, samples_1), dim=0)
         self.Y = torch.cat((labels_0, labels_1), dim=0)
         self.X = self.X.to(torch.float32)
-        self.X = F.avg_pool1d(self.X, 3, 2)
+        _, _, timepoints = self.X.shape
+        baseline_start = 0
+        baseline_end = 125
+        baseline_mean = torch.mean(
+            self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
+        self.X = self.X - baseline_mean
+        # self.X = self.X[..., baseline_end+125:500]
+
+        # self.hamming_window = torch.hamming_window(timepoints)
+        # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
+        # self.X = self.X[..., 768:1000]
+        # self.X = F.avg_pool1d(self.X, 3, 2)
+        self.X = F.avg_pool1d(self.X, 3, 3)
+        # self.X = self.X[..., 512:]
+        # self.X = F.avg_pool1d(self.X, 3, 2)
         # self.X = F.avg_pool1d(self.X, 4, 8)
 
-        self.X = self.X[..., :128]
+        # self.X = self.X[..., :128]
 
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=0.2, random_state=43)
+
+    def get_X_shape(self):
+        return self.X_train.shape
 
     def __len__(self):
         if self.train:
@@ -71,13 +89,15 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
 
 
 class BNCI_LEFT_RIGHT(Dataset):
-    def __init__(self, train, window_size, stride):
+    def __init__(self, train, window_size, stride, strategy, threshold=0.001, n_clusters=128):
         if not BNCI_DECONSTRUCTED.exists():
             bnci_4 = BNCI_4_CLASS()
             deconstruct_moabb_dataset(bnci_4, BNCI_DECONSTRUCTED)
         self.train = train
         self.window_size = window_size
         self.stride = stride
+        self.threshold = threshold
+        self.n_clusters = n_clusters
 
         samples_0 = torch.load(BNCI_DECONSTRUCTED / '0_samples.pth')
         samples_1 = torch.load(BNCI_DECONSTRUCTED / '1_samples.pth')
@@ -86,19 +106,107 @@ class BNCI_LEFT_RIGHT(Dataset):
         self.X = torch.cat((samples_0, samples_1), dim=0)
         self.Y = torch.cat((labels_0, labels_1), dim=0)
 
+        _, _, timepoints = self.X.shape
+        # self.X, self.Y = self.X[:50], self.Y[:50]
+        self.hamming_window = torch.hamming_window(timepoints)
+        baseline_start = 0
+        baseline_end = 125
+        baseline_mean = torch.mean(
+            self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
+        self.X = self.X - baseline_mean
+        # self.X = self.X[..., 768:1000]
+        # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
+        # self.X = F.avg_pool1d(self.X, 3, 2)
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X, self.Y, test_size=0.3, random_state=43)
+            self.X, self.Y, test_size=0.2, random_state=43)
         if self.train:
-            self.X_train = self._discretize(self.X_train)
-            self.X_train = self.X_train.to(torch.float32)
+            if strategy == 'permute':
+                self.X_train = self._discretize(self.X_train)
+                self.X_train = self.X_train.to(torch.float32)
+            elif strategy == 'kmeans':
+                self.X_train = self._kmeans_discretize(self.X_train)
+                self.X_train = self.X_train.to(torch.float32)
         else:
-            self.X_val = self._discretize(self.X_val)
-            self.X_val = self.X_val.to(torch.float32)
+            if strategy == 'permute':
+                self.X_val = self._discretize(self.X_val)
+                self.X_val = self.X_val.to(torch.float32)
+            elif strategy == 'kmeans':
+                self.X_val = self._kmeans_discretize(self.X_val)
+                self.X_val = self.X_val.to(torch.float32)
+
+    def _kmeans_discretize(self, X):
+        images, channels, timepoints = X.shape
+        discretized_X = []
+
+        # Reshape to (images * channels, timepoints)
+        X_reshaped = X.reshape(-1, timepoints)
+
+        for image_channel_data in X_reshaped:
+            discretized_image_channel_data = self._kmeans_permute(
+                image_channel_data)
+            discretized_X.append(discretized_image_channel_data)
+
+        # Reshape back to original shape
+        return torch.tensor(discretized_X).reshape(images, channels, -1)
+
+    def _kmeans_permute(self, X):
+        intermediate_sequence = [0]  # Initialize with zero
+        for i in range(1, len(X)):
+            if abs(X[i-1] - X[i]) < self.threshold:
+                intermediate_sequence.extend([0, 0])
+            elif X[i] > X[i-1]:
+                intermediate_sequence.extend([1, 0])
+            else:
+                intermediate_sequence.extend([0, 1])
+
+        intermediate_array = np.array(intermediate_sequence)
+        intermediate_list = [
+            intermediate_array[i:(i+self.window_size)] for i in range(0, len(intermediate_array) - self.window_size + 1, self.stride)
+        ]
+
+        kmeans = KMeans(n_clusters=self.n_clusters)
+        kmeans.fit(intermediate_list)
+        return kmeans.labels_
+    # def _kmeans_discretize(self, X):
+    #     images, channels, timepoints = X.shape
+    #     discretized_X = []
+    #     for image in range(images):
+    #         image_sequence = []
+    #         for channel in range(channels):
+    #             sequence = X[image, channel]
+    #             discretized_sequence = self._kmeans_permute(sequence)
+    #             image_sequence.append(discretized_sequence)
+    #         discretized_X.append(image_sequence)
+    #     return torch.tensor(discretized_X, dtype=torch.long)
+
+    # def _kmeans_permute(self, X):
+    #     X = X.tolist()
+    #     intermediate_sequence = []
+    #     intermediate_list = []
+    #     X[0] = 0
+    #     for i in range(1, len(X)):
+    #         if abs(X[i-1] - X[i]) < self.threshold:
+    #             intermediate_sequence.extend([0, 0])
+    #         elif X[i] > X[i-1]:
+    #             intermediate_sequence.extend([1, 0])
+    #         else:
+    #             intermediate_sequence.extend([0, 1])
+
+    #     for i in range(0, len(intermediate_sequence) - self.window_size, self.stride):
+    #         window = intermediate_sequence[i:(i+self.window_size)]
+    #         intermediate_list.append(window)
+    #     intermediate_list = np.array(intermediate_list)
+    #     kmeans = KMeans(n_clusters=self.n_clusters)
+    #     kmeans.fit(intermediate_list)
+    #     return kmeans.labels_
 
     def get_X_shape(self):
         return self.X_train.shape
+
+    def get_vocab_size(self):
+        return len(self.permutations)
 
     def _discretize(self, X):
         # self.p_length = configs['BNCI2014_001']['window_size']
