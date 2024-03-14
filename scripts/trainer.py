@@ -69,6 +69,7 @@ class MultiLabelClassifierTrainer(nn.Module):
         self.model.train()
         for batch, (X, y) in enumerate(self.train_loader):
             X, y = X.to(self.device), y.to(self.device)
+            # X = X.unsqueeze(dim=1)
 
             # Forward pass
             # X = X.reshape()
@@ -106,6 +107,7 @@ class MultiLabelClassifierTrainer(nn.Module):
             # for X, y in data_loader:
             for batch, (X, y) in enumerate(self.val_loader):
                 X, y = X.to(self.device), y.to(self.device)
+                # X = X.unsqueeze(dim=1)
                 # Forward pass
                 # X = torch.reshape(X, (-1, 562, 22))
                 y_logits = self.model(X)

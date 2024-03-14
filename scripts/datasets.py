@@ -54,23 +54,25 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
         baseline_mean = torch.mean(
             self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
         self.X = self.X - baseline_mean
-        # self.X = self.X[..., baseline_end+125:500]
+        self.X = self.X[..., baseline_end+125:]
 
         # self.hamming_window = torch.hamming_window(timepoints)
         # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
-        # self.X = self.X[..., 768:1000]
-        # self.X = F.avg_pool1d(self.X, 3, 2)
-        self.X = F.avg_pool1d(self.X, 3, 3)
+        # self.X = F.avg_pool1d(self.X, 3, 3)
+        # self.X = F.avg_pool1d(self.X, 3, 3)
+        # self.X = self.X[..., 100:100+128]
         # self.X = self.X[..., 512:]
         # self.X = F.avg_pool1d(self.X, 3, 2)
         # self.X = F.avg_pool1d(self.X, 4, 8)
+        # self.X = F.max_pool1d(self.X, 3, 2)
+        self.X = self.X[..., ::3]
 
         # self.X = self.X[..., :128]
 
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X, self.Y, test_size=0.2, random_state=43)
+            self.X, self.Y, test_size=0.2, random_state=42)
 
     def get_X_shape(self):
         return self.X_train.shape
@@ -117,6 +119,8 @@ class BNCI_LEFT_RIGHT(Dataset):
         # self.X = self.X[..., 768:1000]
         # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
         # self.X = F.avg_pool1d(self.X, 3, 2)
+        # self.X = F.max_pool1d(self.X, 3, 2)
+        # self.X = self.X[..., ::3]
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
@@ -125,6 +129,7 @@ class BNCI_LEFT_RIGHT(Dataset):
             if strategy == 'permute':
                 self.X_train = self._discretize(self.X_train)
                 self.X_train = self.X_train.to(torch.float32)
+                # self.X_train = self.X_train[..., -128:]
             elif strategy == 'kmeans':
                 self.X_train = self._kmeans_discretize(self.X_train)
                 self.X_train = self.X_train.to(torch.float32)
@@ -132,6 +137,7 @@ class BNCI_LEFT_RIGHT(Dataset):
             if strategy == 'permute':
                 self.X_val = self._discretize(self.X_val)
                 self.X_val = self.X_val.to(torch.float32)
+                # self.X_val = self.X_val[..., -128:]
             elif strategy == 'kmeans':
                 self.X_val = self._kmeans_discretize(self.X_val)
                 self.X_val = self.X_val.to(torch.float32)
