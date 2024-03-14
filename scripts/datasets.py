@@ -35,7 +35,7 @@ def read_X_and_y(x_file, y_file):
 
 
 class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
-    def __init__(self, train):
+    def __init__(self, train=True):
         if not BNCI_DECONSTRUCTED.exists():
             bnci_4 = BNCI_4_CLASS()
             deconstruct_moabb_dataset(bnci_4, BNCI_DECONSTRUCTED)
@@ -91,7 +91,7 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
 
 
 class BNCI_LEFT_RIGHT(Dataset):
-    def __init__(self, train, window_size, stride, strategy, threshold=0.001, n_clusters=128):
+    def __init__(self, window_size, stride, strategy, train=True, threshold=0.001, n_clusters=128):
         if not BNCI_DECONSTRUCTED.exists():
             bnci_4 = BNCI_4_CLASS()
             deconstruct_moabb_dataset(bnci_4, BNCI_DECONSTRUCTED)

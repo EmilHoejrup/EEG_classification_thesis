@@ -1,31 +1,22 @@
-# Datasets
-him_or_her:
-  batch_size: 32
-  window_size: 6
-  stride: 2
+models_to_train: ["EEGConformer"]
+dataset: "BNCI_LEFT_RIGHT"
 
-BNCI2014_001:
-  batch_size: 32
-  window_size: 6
-  stride: 2
+train_params:
+  epochs: 100
+  batch_size: 64
+  lr: 0.001
+  classes: 2
 
-# Models
-vanilla_transformer:
-  hidden_size: 300
-  num_attention_heads: 3
+models:
+  EEGConformer:
+    n_classes: [2]
+    n_channels: [22]
+    add_log_softmax: [False]
+    final_fc_length: ["auto"]
 
-TransWithEmbeddingV1:
-  model_params:
-    d_model: 22
-    nhead: 2
-    num_layers: 2
-    emb_dim: 64
-    vocab_size: 64
-
-BNCTransWithEmbeddingV1:
-  model_params:
-    d_model: 22
-    nhead: 2
-    num_layers: 2
-    emb_dim: 64
-    vocab_size: 497
+datasets:
+  BNCI_LEFT_RIGHT:
+    window_size: [5, 6]
+    stride: [2, 3]
+    strategy: ["permute"]
+  BNCI_LEFT_RIGHT_CONTINUOUS:
