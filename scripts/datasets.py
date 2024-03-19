@@ -34,19 +34,28 @@ def read_X_and_y(x_file, y_file):
     return X, Y
 
 
+def load_bnci():
+    samples_0 = torch.load(BNCI_DECONSTRUCTED / '0_samples.pth')
+    samples_1 = torch.load(BNCI_DECONSTRUCTED / '1_samples.pth')
+    samples_2 = torch.load(BNCI_DECONSTRUCTED / '2_samples.pth')
+    samples_3 = torch.load(BNCI_DECONSTRUCTED / '3_samples.pth')
+    labels_0 = torch.load(BNCI_DECONSTRUCTED / '0_labels.pth')
+    labels_1 = torch.load(BNCI_DECONSTRUCTED / '1_labels.pth')
+    labels_2 = torch.load(BNCI_DECONSTRUCTED / '2_labels.pth')
+    labels_3 = torch.load(BNCI_DECONSTRUCTED / '3_labels.pth')
+    X = torch.cat((samples_0, samples_1, samples_2, samples_3), dim=0)
+    Y = torch.cat((labels_0, labels_1, labels_2, labels_3), dim=0)
+    return X, Y
+
+
 class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
     def __init__(self, train=True):
         if not BNCI_DECONSTRUCTED.exists():
             bnci_4 = BNCI_4_CLASS()
             deconstruct_moabb_dataset(bnci_4, BNCI_DECONSTRUCTED)
         self.train = train
+        self.X, self.Y = load_bnci()
 
-        samples_0 = torch.load(BNCI_DECONSTRUCTED / '0_samples.pth')
-        samples_1 = torch.load(BNCI_DECONSTRUCTED / '1_samples.pth')
-        labels_0 = torch.load(BNCI_DECONSTRUCTED / '0_labels.pth')
-        labels_1 = torch.load(BNCI_DECONSTRUCTED / '1_labels.pth')
-        self.X = torch.cat((samples_0, samples_1), dim=0)
-        self.Y = torch.cat((labels_0, labels_1), dim=0)
         self.X = self.X.to(torch.float32)
         _, _, timepoints = self.X.shape
         baseline_start = 0
@@ -54,18 +63,18 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
         baseline_mean = torch.mean(
             self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
         self.X = self.X - baseline_mean
-        self.X = self.X[..., baseline_end+125:]
+        # self.X = self.X[..., baseline_end+125:]
 
         # self.hamming_window = torch.hamming_window(timepoints)
         # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
         # self.X = F.avg_pool1d(self.X, 3, 3)
         # self.X = F.avg_pool1d(self.X, 3, 3)
-        # self.X = self.X[..., 100:100+128]
+        # self.X = self.X[..., :500]
         # self.X = self.X[..., 512:]
         # self.X = F.avg_pool1d(self.X, 3, 2)
         # self.X = F.avg_pool1d(self.X, 4, 8)
         # self.X = F.max_pool1d(self.X, 3, 2)
-        self.X = self.X[..., ::3]
+        # self.X = self.X[..., ::3]
 
         # self.X = self.X[..., :128]
 
@@ -101,12 +110,7 @@ class BNCI_LEFT_RIGHT(Dataset):
         self.threshold = threshold
         self.n_clusters = n_clusters
 
-        samples_0 = torch.load(BNCI_DECONSTRUCTED / '0_samples.pth')
-        samples_1 = torch.load(BNCI_DECONSTRUCTED / '1_samples.pth')
-        labels_0 = torch.load(BNCI_DECONSTRUCTED / '0_labels.pth')
-        labels_1 = torch.load(BNCI_DECONSTRUCTED / '1_labels.pth')
-        self.X = torch.cat((samples_0, samples_1), dim=0)
-        self.Y = torch.cat((labels_0, labels_1), dim=0)
+        self.X, self.Y = load_bnci()
 
         _, _, timepoints = self.X.shape
         # self.X, self.Y = self.X[:50], self.Y[:50]

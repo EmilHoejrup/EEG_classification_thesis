@@ -47,10 +47,10 @@ def train_models(train_dataloader, val_dataloader, timepoints):
         param_combinations = product(*model_params.values())
 
         for combination in param_combinations:
+            param_keys = model_params.keys()
+            args = dict(zip(param_keys, combination))
             if model == 'EEGConformer':
                 # model_params['input_window_samples'] = timepoints
-                param_keys = model_params.keys()
-                args = dict(zip(param_keys, combination))
                 print(*args)
                 model = EEGConformer(**args, input_window_samples=timepoints)
 
