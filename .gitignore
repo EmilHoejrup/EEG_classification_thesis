@@ -1,6 +1,6 @@
-*.npy.gz
-*.p
-data/
+# *.npy.gz
+# *.p
+# data/
 mlruns/
 mlartifacts/
 wandb/

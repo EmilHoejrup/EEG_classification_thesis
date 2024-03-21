@@ -64,8 +64,9 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             args = dict(zip(param_keys, combination))
             if model_type == 'EEGConformer':
                 model = EEGConformer(**args, n_times=timepoints)
-            # elif model_type == 'VanillaTransformer':
-            #     model = VanillaTransformer(**args, n_times=timepoints)
+            elif model_type == 'VanillaTransformer':
+                model = VanillaTransformer(
+                    num_electrodes=args['num_electrodes'], num_heads=args['num_heads'])
 
             train(model, train_dataloader,
                   val_dataloader, dataset_combination)
