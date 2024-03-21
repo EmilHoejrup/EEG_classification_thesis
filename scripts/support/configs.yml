@@ -1,16 +1,22 @@
 models_to_train: ["EEGConformer"]
-dataset: "BNCI_LEFT_RIGHT"
+dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
 
 train_params:
-  epochs: 100
+  epochs: 1
   batch_size: 64
   lr: 0.001
   classes: 2
+  weight_decay: 0.0001
 
 models:
   EEGConformer:
-    n_classes: [2]
-    n_channels: [22]
+    n_outputs: [2]
+    n_chans: [22]
+    add_log_softmax: [False]
+    final_fc_length: ["auto"]
+  VanillaTransformer:
+    n_outputs: [2]
+    n_chans: [22]
     add_log_softmax: [False]
     final_fc_length: ["auto"]
 

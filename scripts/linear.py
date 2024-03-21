@@ -1,4 +1,6 @@
 # %%
+from sklearn.model_selection import KFold
+from sklearn.metrics import accuracy_score
 import gzip
 import numpy as np
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -10,7 +12,7 @@ import torch
 import pickle as p
 import yaml
 from support.constants import DATA_DIR, BNCI_CHANNELS, BNCI_SFREQ
-from datasets import load_bnci
+from datasets import read_X_and_y
 from mne.decoding import CSP
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.pipeline import make_pipeline
@@ -34,8 +36,10 @@ import matplotlib as plt
 #     with open(y_file, 'rb') as f:
 #         Y = p.load(f)
 #     return X, Y
-from moabb.datasets.base import BaseDataset
-import numpy as np
+
+BNCI = DATA_DIR / 'BNCI2014_001'
+X_FILE = BNCI / 'X.npy.gz'
+Y_FILE = BNCI / 'Y.p'
 
 
 def x_to_epochs(X):
@@ -58,7 +62,7 @@ def train(epochs_array, labels):
     cv = ShuffleSplit(10, test_size=0.2, random_state=42)
     cv_split = cv.split(epochs_data_train)
     lda = LinearDiscriminantAnalysis()
-    csp = CSP(n_components=80, reg=None, log=True, norm_trace=False)
+    csp = CSP(n_components=8, reg=None, log=True, norm_trace=False)
 
     # Use scikit-learn Pipeline with cross_val_score function
     clf = Pipeline([("CSP", csp), ("LDA", lda)])
@@ -73,9 +77,8 @@ def train(epochs_array, labels):
 
 
 if __name__ == '__main__':
-    X, Y = load_bnci()
+    X, Y = read_X_and_y(X_FILE, Y_FILE)
     X.shape
-# %%
     epochs_array = x_to_epochs(X)
-    labels = Y.numpy()
+    labels = Y
     train(epochs_array, labels)

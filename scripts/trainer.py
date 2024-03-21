@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
+import wandb
 from support.utils import plot_train_val_scores
 from torch.optim.lr_scheduler import LRScheduler
 
@@ -50,6 +51,7 @@ class MultiLabelClassifierTrainer(nn.Module):
         self.val_losses = []
         self.val_accuracies = []
         self.scheduler = scheduler
+        wandb.watch(self.model, self.loss_fun, log='all')
 
     def fit(self, epochs=5, print_metrics=True):
         for _ in tqdm(range(epochs)):
@@ -99,6 +101,7 @@ class MultiLabelClassifierTrainer(nn.Module):
         if (print_metrics):
             print(
                 f"Train loss: {train_loss:.5f} | Train acc: {train_acc*100:.5f}")
+        wandb.log({"Train Loss": train_loss, "Train Accuracy": train_acc})
 
     def _val_step(self, print_metrics):
         val_loss, val_acc = 0, 0
@@ -127,3 +130,5 @@ class MultiLabelClassifierTrainer(nn.Module):
             self.val_accuracies.append(val_acc)
         if (print_metrics):
             print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc*100:.5f}")
+        wandb.log({"Validation Loss": val_loss,
+                  "Validation Accuracy": val_acc})

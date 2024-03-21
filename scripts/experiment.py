@@ -159,7 +159,7 @@ class NewTransformer(nn.Module):
 
 
 # %%
-window_size = 3
+window_size = 7
 stride = 3
 train_dataset = BNCI_LEFT_RIGHT(
     train=True, window_size=window_size, stride=stride, strategy='permute')
@@ -189,7 +189,7 @@ model = VanillaTransformer(num_electrodes=22, num_classes=2, )
 images, channels, timepoints = train_dataset.get_X_shape()
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=timepoints, final_conv_length='auto')
-# model = Transformer(seq_len=timepoints, max_len=timepoints)
+model = Transformer(seq_len=timepoints, max_len=timepoints)
 # IMPLEMENT weight decay
 loss_fun = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(
@@ -198,7 +198,7 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                        T_max=EPOCHS - 1)
 trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
                                       val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
-trainer.fit(epochs=1, print_metrics=False)
+trainer.fit(epochs=50, print_metrics=True)
 
 trainer.plot_train_val_scores()
 
@@ -255,7 +255,7 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
 
 trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
                                       val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
-trainer.fit(epochs=50, print_metrics=False)
+trainer.fit(epochs=50, print_metrics=True)
 trainer.plot_train_val_scores()
 
 # %%

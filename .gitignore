@@ -3,3 +3,4 @@
 data/
 mlruns/
 mlartifacts/
+wandb/

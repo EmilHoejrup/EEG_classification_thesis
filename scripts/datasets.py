@@ -19,8 +19,9 @@ from braindecode.datautil import load_concat_dataset
 
 X_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'X.npy.gz'
 Y_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'Y.p'
-X_BNCI2015_001 = DATA_DIR / 'BNCI2014_001' / 'X.npy.gz'
-Y_BNCI2015_001 = DATA_DIR / 'BNCI2014_001' / 'Y.p'
+BNCI2014_001_DIR = DATA_DIR / 'BNCI2014_001'
+X_BNCI2014_001 = BNCI2014_001_DIR / 'X.npy.gz'
+Y_BNCI2014_001 = BNCI2014_001_DIR / 'Y.p'
 BNCI_DISCRETIZED_DIR = DATA_DIR / 'BNCI_DISCRETIZED'
 BNCI_DECONSTRUCTED = DATA_DIR / 'BNCI_deconstructed'
 
@@ -34,27 +35,26 @@ def read_X_and_y(x_file, y_file):
     return X, Y
 
 
-def load_bnci():
-    samples_0 = torch.load(BNCI_DECONSTRUCTED / '0_samples.pth')
-    samples_1 = torch.load(BNCI_DECONSTRUCTED / '1_samples.pth')
-    samples_2 = torch.load(BNCI_DECONSTRUCTED / '2_samples.pth')
-    samples_3 = torch.load(BNCI_DECONSTRUCTED / '3_samples.pth')
-    labels_0 = torch.load(BNCI_DECONSTRUCTED / '0_labels.pth')
-    labels_1 = torch.load(BNCI_DECONSTRUCTED / '1_labels.pth')
-    labels_2 = torch.load(BNCI_DECONSTRUCTED / '2_labels.pth')
-    labels_3 = torch.load(BNCI_DECONSTRUCTED / '3_labels.pth')
-    X = torch.cat((samples_0, samples_1, samples_2, samples_3), dim=0)
-    Y = torch.cat((labels_0, labels_1, labels_2, labels_3), dim=0)
-    return X, Y
+# def load_bnci():
+#     samples_0 = torch.load(BNCI_DECONSTRUCTED / '0_samples.pth')
+#     samples_1 = torch.load(BNCI_DECONSTRUCTED / '1_samples.pth')
+#     samples_2 = torch.load(BNCI_DECONSTRUCTED / '2_samples.pth')
+#     samples_3 = torch.load(BNCI_DECONSTRUCTED / '3_samples.pth')
+#     labels_0 = torch.load(BNCI_DECONSTRUCTED / '0_labels.pth')
+#     labels_1 = torch.load(BNCI_DECONSTRUCTED / '1_labels.pth')
+#     labels_2 = torch.load(BNCI_DECONSTRUCTED / '2_labels.pth')
+#     labels_3 = torch.load(BNCI_DECONSTRUCTED / '3_labels.pth')
+#     X = torch.cat((samples_0, samples_1, samples_2, samples_3), dim=0)
+#     Y = torch.cat((labels_0, labels_1, labels_2, labels_3), dim=0)
+#     return X, Y
 
 
 class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
     def __init__(self, train=True):
-        if not BNCI_DECONSTRUCTED.exists():
-            bnci_4 = BNCI_4_CLASS()
-            deconstruct_moabb_dataset(bnci_4, BNCI_DECONSTRUCTED)
+        if not BNCI2014_001_DIR.exists():
+            fetch_BNCI2014_001()
         self.train = train
-        self.X, self.Y = load_bnci()
+        self.X, self.Y = read_X_and_y(X_BNCI2014_001, Y_BNCI2014_001)
 
         self.X = self.X.to(torch.float32)
         _, _, timepoints = self.X.shape
@@ -101,16 +101,14 @@ class BNCI_LEFT_RIGHT_CONTINUOUS(Dataset):
 
 class BNCI_LEFT_RIGHT(Dataset):
     def __init__(self, window_size, stride, strategy, train=True, threshold=0.001, n_clusters=128):
-        if not BNCI_DECONSTRUCTED.exists():
-            bnci_4 = BNCI_4_CLASS()
-            deconstruct_moabb_dataset(bnci_4, BNCI_DECONSTRUCTED)
+        if not BNCI2014_001_DIR.exists():
+            fetch_BNCI2014_001()
         self.train = train
+        self.X, self.Y = read_X_and_y(X_BNCI2014_001, Y_BNCI2014_001)
         self.window_size = window_size
         self.stride = stride
         self.threshold = threshold
         self.n_clusters = n_clusters
-
-        self.X, self.Y = load_bnci()
 
         _, _, timepoints = self.X.shape
         # self.X, self.Y = self.X[:50], self.Y[:50]
