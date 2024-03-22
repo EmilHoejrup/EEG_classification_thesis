@@ -12,4 +12,5 @@ module load Anaconda3
 source activate evinthesis
 export WANDB_API_KEY=50dccae57af0af4daee361e9f93de1c713d34dd4
 cd scripts
+which python
 python run.py
