@@ -51,6 +51,7 @@ class MultiLabelClassifierTrainer(nn.Module):
         self.val_losses = []
         self.val_accuracies = []
         self.scheduler = scheduler
+        self.model.to(device)
         wandb.watch(self.model, self.loss_fun, log='all')
 
     def fit(self, epochs=5, print_metrics=True):
