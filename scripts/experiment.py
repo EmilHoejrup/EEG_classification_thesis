@@ -103,8 +103,8 @@ val_dataloader = DataLoader(
 # model = EEGConformer(n_outputs=2, n_channels=64, )
 b, c, timepoints = train_dataset.get_X_shape()
 # model = NewTransformer(seq_len=timepoints*c, vocab_size=(timepoints*c), embedding_dim=9)
-model = ConTransformer(drop_prob=0.1, seq_len=timepoints,
-                       n_layers=1, n_head=2, d_model=32, max_len=timepoints)
+# model = ConTransformer(drop_prob=0.1, seq_len=timepoints,
+#                        n_layers=1, n_head=2, d_model=32, max_len=timepoints)
 # model = Experiment(n_channels=22, seq_len=timepoints)
 # model = VanillaTransformer(num_electrodes=22, depth=3, heads=4)
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2, add_log_softmax=False,

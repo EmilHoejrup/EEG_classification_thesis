@@ -2,7 +2,7 @@ models_to_train: ["EEGConformer", "Transformer", "BasicTransformer"]
 dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
 
 train_params:
-  epochs: 400
+  epochs: 1
   batch_size: 64
   lr: 0.001
   classes: 2

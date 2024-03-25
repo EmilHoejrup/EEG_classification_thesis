@@ -98,8 +98,10 @@ def train(model, train_dataloader, val_dataloader, dataset_combination=None, con
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(
         ), lr=configs['train_params']['lr'], weight_decay=configs['train_params']['weight_decay'])
-        scheduler = torch.optim.lr_scheduler.StepLR(
-            optimizer, step_size=1, gamma=0.1)
+        # scheduler = torch.optim.lr_scheduler.StepLR(
+        #     optimizer, step_size=1, gamma=0.1)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                       T_max=configs['train_params']['epochs'])
         trainer = MultiLabelClassifierTrainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device)
         trainer.fit(epochs=configs['train_params']['epochs'])
