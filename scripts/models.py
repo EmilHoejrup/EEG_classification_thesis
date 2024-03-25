@@ -7,6 +7,127 @@ import torch.nn.init as init
 import numpy as np
 
 
+class BasicTransformer(nn.Module):
+    def __init__(self, n_channels, seq_len, dropout=0.5):
+        super().__init__()
+        self.n_channels = n_channels
+        self.seq_len = seq_len
+        self.encoder_layer = nn.TransformerEncoderLayer(dropout=dropout,
+                                                        d_model=n_channels, nhead=2, dim_feedforward=128, batch_first=True)
+        self.head = SimpleClassificationHead(
+            d_model=n_channels, seq_len=seq_len)
+
+    def forward(self, x):
+        b, c, t = x.shape
+        x = x.view(b, t, c)
+        # print(x.shape)
+        x = self.encoder_layer(x)
+        # print(x.shape)
+        x = self.head(x)
+        # print(x.shape)
+        return x
+
+
+class SimpleClassificationHead(nn.Module):
+    def __init__(self, d_model, seq_len, hidden1=32, hidden2=8, n_classes: int = 2, dropout=0.1):
+        super().__init__()
+        self.norm = nn.LayerNorm(d_model)
+        # self.flatten = nn.Flatten()
+        # self.seq = nn.Sequential(nn.Flatten(), nn.Linear(d_model * seq_len, hidden1), nn.ReLU(), nn.Dropout(dropout), nn.Linear(
+        #     hidden1, hidden2), nn.ReLU(), nn.Dropout(dropout), nn.Linear(hidden2, n_classes))
+        self.seq = nn.Sequential(
+            nn.Flatten(), nn.Linear(d_model*seq_len, n_classes))
+
+    def forward(self, x):
+
+        x = self.norm(x)
+
+        x = self.seq(x)
+
+        return x
+
+
+class ConTransformer(nn.Module):
+
+    def __init__(self,  d_model=100, n_head=4, max_len=1225, seq_len=200,
+                 ffn_hidden=128, n_layers=2, drop_prob=0.1, details=False, n_channels=22, n_classes=2):
+        super().__init__()
+        self.details = details
+        self.n_channels = n_channels
+        self.seq_len = seq_len
+        self.encoder_input_layer = nn.Linear(
+            in_features=n_channels,
+            out_features=d_model
+        )
+
+        self.pos_emb = PostionalEncoding(
+            max_seq_len=max_len, batch_first=False, d_model=d_model, dropout=0.1)
+        self.encoder = Encoder(d_model=d_model,
+                               n_head=n_head,
+                               ffn_hidden=ffn_hidden,
+                               drop_prob=drop_prob,
+                               n_layers=n_layers,
+                               details=details,)
+        self.classHead = SimpleClassificationHead(
+            seq_len=seq_len, d_model=d_model, n_classes=n_classes)
+
+    def forward(self, src):
+        # src = torch.reshape(src, (-1, self.seq_len, self.n_channels))
+        # if self.details:
+        #     print('before input layer: ' + str(src.size()))
+        # src = self.encoder_input_layer(src)
+        # if self.details:
+        #     print('after input layer: ' + str(src.size()))
+        # src = self.pos_emb(src)
+        # if self.details:
+        #     print('after pos_emb: ' + str(src.size()))
+        # enc_src = self.encoder(src)
+        # cls_res = self.classHead(enc_src)
+        # if self.details:
+        #     print('after cls_res: ' + str(cls_res.size()))
+        # return cls_res
+        return self.classHead(self.encoder(self.pos_emb(self.encoder_input_layer(torch.reshape(src, (-1, self.seq_len, self.n_channels))))))
+
+
+class NewTransformer(nn.Module):
+    def __init__(self, vocab_size=128, embedding_dim=30, seq_len=8228, dropout=0.1, dim_ff=128):
+        super().__init__()
+        self.vocab_size = vocab_size
+        self.emb_dim = embedding_dim
+        self.encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embedding_dim, nhead=1, dim_feedforward=dim_ff, dropout=dropout, batch_first=True)
+        self.emb = nn.Embedding(self.vocab_size, embedding_dim=embedding_dim)
+        # self.class_head = ClassificationHead(hidden1=128,hidden2=64,hidden3=32,
+        #     d_model=embedding_dim, seq_len=seq_len, n_classes=2, details=False)
+        self.class_head = SimpleClassificationHead(
+            d_model=embedding_dim, seq_len=seq_len, dropout=dropout)
+        # self.positional = PostionalEncoding(d_model=seq_len, batch_first=True)
+        self.dropout = nn.Dropout(dropout)
+        self.layer_norm = nn.LayerNorm(embedding_dim)
+
+    def forward(self, x):
+        batch, channels, timepoints = x.shape
+        x = x.to(torch.long)
+        x = x.view(batch, -1)
+
+        # x = self.positional(x)
+        print(x.shape)
+        # print(x.dtype)
+        x = self.emb(x)
+        # x = F.one_hot(x)
+        print(x.shape)
+        # x = x.to(torch.float32)
+        # print(x.dtype)
+        x = self.layer_norm(x)
+        x = self.dropout(x)
+        print(x.shape)
+        x = self.encoder_layer(x)
+        x = self.dropout(x)
+        print(x.shape)
+        x = self.class_head(x)
+        return x
+
+
 class TransWithEmbeddingV1(nn.Module):
     def __init__(self,  d_model, nhead, num_layers, vocab_size, emb_dim):
         super().__init__()
