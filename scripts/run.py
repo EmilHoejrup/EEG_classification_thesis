@@ -76,17 +76,17 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
                     **args, seq_len=timepoints)
 
             train(model, train_dataloader,
-                  val_dataloader, dataset_combination)
+                  val_dataloader,timepoints, dataset_combination)
 
 
-def train(model, train_dataloader, val_dataloader, dataset_combination=None, configs=configs):
+def train(model, train_dataloader, val_dataloader,timepoints, dataset_combination=None, configs=configs):
 
     with wandb.init(project='EEG-Transformers'):
         if dataset_combination:
             configs.update({'model': model.__class__.__name__,
-                            'window_size': dataset_combination[0], 'stride': dataset_combination[1], 'dataset_strategy': dataset_combination[2]})
+                            'window_size': dataset_combination[0], 'stride': dataset_combination[1], 'dataset_strategy': dataset_combination[2], 'sequence length': timepoints})
         else:
-            configs.update({'model': model.__class__.__name__})
+            configs.update({'model': model.__class__.__name__, 'sequence length': timepoints})
         wandb.config.update(configs)
         run_name = f"{model.__class__.__name__} "
         if dataset_combination:
