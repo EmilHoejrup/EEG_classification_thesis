@@ -1,5 +1,5 @@
 models_to_train: ["EEGConformer", "Transformer", "BasicTransformer"]
-dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
+dataset: "BNCI_LEFT_RIGHT"
 
 train_params:
   epochs: 400
@@ -22,14 +22,15 @@ models:
     mlp_channels: [128]
   BasicTransformer:
     n_channels: [22]
-    dropout: [0.1]
+    dropout: [0.5]
   Transformer:
     d_model: [100]
-    n_head: [2, 4]
+    n_head: [2]
     ffn_hidden: [128]
-    n_layers: [2, 3]
+    n_layers: [2]
     n_channels: [22]
     n_classes: [2]
+    drop_prop: [0.5]
 datasets:
   BNCI_LEFT_RIGHT:
     window_size: [5, 6, 7, 8]
