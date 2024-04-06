@@ -4,3 +4,4 @@
 mlruns/
 mlartifacts/
 wandb/
+scripts/attached
