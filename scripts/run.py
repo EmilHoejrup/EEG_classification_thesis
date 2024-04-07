@@ -14,6 +14,7 @@ from new_model import *
 from models import *
 from itertools import product
 from trainer import MultiLabelClassifierTrainer
+from EEGTransformer import EEGTransformer
 
 has_gpu = torch.cuda.is_available()
 has_gpu = torch.cuda.is_available()
@@ -74,19 +75,23 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             elif model_type == 'BasicTransformer':
                 model = BasicTransformer(
                     **args, seq_len=timepoints)
+            elif model_type == 'EEGTransformer':
+                model = EEGTransformer(
+                    **args, seq_len=timepoints)
 
             train(model, train_dataloader,
-                  val_dataloader,timepoints, dataset_combination)
+                  val_dataloader, timepoints, dataset_combination)
 
 
-def train(model, train_dataloader, val_dataloader,timepoints, dataset_combination=None, configs=configs):
+def train(model, train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs):
 
-    with wandb.init(project='EEG-Transformers'):
+    with wandb.init(project='EEG-Transformers 2.0'):
         if dataset_combination:
             configs.update({'model': model.__class__.__name__,
                             'window_size': dataset_combination[0], 'stride': dataset_combination[1], 'dataset_strategy': dataset_combination[2], 'sequence length': timepoints})
         else:
-            configs.update({'model': model.__class__.__name__, 'sequence length': timepoints})
+            configs.update({'model': model.__class__.__name__,
+                           'sequence length': timepoints})
         wandb.config.update(configs)
         run_name = f"{model.__class__.__name__} "
         if dataset_combination:
@@ -101,7 +106,7 @@ def train(model, train_dataloader, val_dataloader,timepoints, dataset_combinatio
         # scheduler = torch.optim.lr_scheduler.StepLR(
         #     optimizer, step_size=1, gamma=0.1)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
-                                                       T_max=configs['train_params']['epochs'])
+                                                               T_max=configs['train_params']['epochs'])
         trainer = MultiLabelClassifierTrainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device)
         trainer.fit(epochs=configs['train_params']['epochs'])

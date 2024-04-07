@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 from datasets import *
 from trainer import *
+from EEGTransformer import EEGTransformer
 from support.utils import *
 import yaml
 import numpy as np
@@ -121,6 +122,8 @@ model = EEGConformer(n_classes=2, n_channels=22,
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=50, final_conv_length='auto')
 # model = SimpleViT()
+model = EEGTransformer(seq_len=timepoints, nhead=2, num_classes=2,
+                       depth=2, emb_size=22, expansion=4, dropout=0.5)
 # model = ATCNet(n_channels=22, n_outputs=2, n_windows=1,
 #                add_log_softmax=False, conv_block_kernel_length_1=4, conv_block_kernel_length_2=4, conv_block_pool_size_1=8, conv_block_pool_size_2=7, tcn_kernel_size=2)
 # model = ATCNet(in_channels=22, num_classes=2)

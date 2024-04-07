@@ -1,8 +1,8 @@
-models_to_train: ["EEGConformer", "Transformer"]
-dataset: "BNCI_LEFT_RIGHT"
+models_to_train: ["EEGTransformer"]
+dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
 
 train_params:
-  epochs: 400
+  epochs: 300
   batch_size: 64
   lr: 0.0001
   classes: 2
@@ -31,6 +31,13 @@ models:
     n_channels: [22]
     n_classes: [2]
     drop_prob: [0.5, 0.8]
+  EEGTransformer:
+  nhead: 2
+  num_classes: 2
+  depth: 2
+  emb_size: 22
+  expansion: 4
+  dropout: 0.5
 datasets:
   BNCI_LEFT_RIGHT:
     window_size: [5, 6, 7, 8]
