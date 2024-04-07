@@ -32,15 +32,15 @@ models:
     n_classes: [2]
     drop_prob: [0.5, 0.8]
   EEGTransformer:
-  nhead: 2
-  num_classes: 2
-  depth: 2
-  emb_size: 22
-  expansion: 4
-  dropout: 0.5
+    nhead: [2]
+    num_classes: [2]
+    depth: [2]
+    emb_size: [22]
+    expansion: [4]
+    dropout: [0.1, 0.2, 0.5, 0.8]
 datasets:
   BNCI_LEFT_RIGHT:
-    window_size: [5, 6, 7, 8]
-    stride: [2, 3, 4, 5]
+    window_size: [5, 7, 9, 11, 17, 33]
+    stride: [1, 3, 9, 11]
     strategy: ["permute"]
   BNCI_LEFT_RIGHT_CONTINUOUS:
