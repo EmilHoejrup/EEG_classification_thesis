@@ -21,6 +21,23 @@ class EEGTransformer(nn.Module):
         return out
 
 
+class EEGTransformerEmb(nn.Module):
+    def __init__(self, seq_len, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
+        super(EEGTransformerEmb, self).__init__()
+        self.embedding = nn.Embedding(seq_len, emb_size)
+        self.transformer_encoder = _TransformerEncoder(
+            depth, emb_size, nhead, expansion, dropout)
+        self.clshead = ClassificationHead(seq_len*emb_size, num_classes)
+
+    def forward(self, x):
+        # x = rearrange(x, 'b c t -> b t c')
+        x = self.embedding(x)
+        x = self.transformer_encoder(x)
+        # x, out = self.clshead(x)
+        out = self.clshead(x)
+        return out
+
+
 class _MultiHeadAttention(nn.Module):
     def __init__(self, d_model, nhead, dropout=0.1):
         super(_MultiHeadAttention, self).__init__()

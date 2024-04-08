@@ -120,7 +120,7 @@ class BNCI_LEFT_RIGHT(Dataset):
         self.X = self.X - baseline_mean
         # self.X = self.X[..., 768:1000]
         # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
-        self.X = F.avg_pool1d(self.X, 3, 2)
+        # self.X = F.avg_pool1d(self.X, 3, 2)
         # self.X = F.max_pool1d(self.X, 3, 2)
         # self.X = self.X[..., ::3]
         # self.Y = self.Y.astype(float)
@@ -128,87 +128,11 @@ class BNCI_LEFT_RIGHT(Dataset):
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=0.2, random_state=43)
         if self.train:
-            if strategy == 'permute':
-                self.X_train = self._discretize(self.X_train)
-                self.X_train = self.X_train.to(torch.float32)
-                # self.X_train = self.X_train[..., -128:]
-            elif strategy == 'kmeans':
-                self.X_train = self._kmeans_discretize(self.X_train)
-                self.X_train = self.X_train.to(torch.float32)
+            self.X_train = self._discretize(self.X_train)
+            self.X_train = self.X_train.to(torch.float32)
         else:
-            if strategy == 'permute':
-                self.X_val = self._discretize(self.X_val)
-                self.X_val = self.X_val.to(torch.float32)
-                # self.X_val = self.X_val[..., -128:]
-            elif strategy == 'kmeans':
-                self.X_val = self._kmeans_discretize(self.X_val)
-                self.X_val = self.X_val.to(torch.float32)
-
-    def _kmeans_discretize(self, X):
-        images, channels, timepoints = X.shape
-        discretized_X = []
-
-        # Reshape to (images * channels, timepoints)
-        X_reshaped = X.reshape(-1, timepoints)
-
-        for image_channel_data in X_reshaped:
-            discretized_image_channel_data = self._kmeans_permute(
-                image_channel_data)
-            discretized_X.append(discretized_image_channel_data)
-
-        # Reshape back to original shape
-        return torch.tensor(discretized_X).reshape(images, channels, -1)
-
-    def _kmeans_permute(self, X):
-        intermediate_sequence = [0]  # Initialize with zero
-        for i in range(1, len(X)):
-            if abs(X[i-1] - X[i]) < self.threshold:
-                intermediate_sequence.extend([0, 0])
-            elif X[i] > X[i-1]:
-                intermediate_sequence.extend([1, 0])
-            else:
-                intermediate_sequence.extend([0, 1])
-
-        intermediate_array = np.array(intermediate_sequence)
-        intermediate_list = [
-            intermediate_array[i:(i+self.window_size)] for i in range(0, len(intermediate_array) - self.window_size + 1, self.stride)
-        ]
-
-        kmeans = KMeans(n_clusters=self.n_clusters)
-        kmeans.fit(intermediate_list)
-        return kmeans.labels_
-    # def _kmeans_discretize(self, X):
-    #     images, channels, timepoints = X.shape
-    #     discretized_X = []
-    #     for image in range(images):
-    #         image_sequence = []
-    #         for channel in range(channels):
-    #             sequence = X[image, channel]
-    #             discretized_sequence = self._kmeans_permute(sequence)
-    #             image_sequence.append(discretized_sequence)
-    #         discretized_X.append(image_sequence)
-    #     return torch.tensor(discretized_X, dtype=torch.long)
-
-    # def _kmeans_permute(self, X):
-    #     X = X.tolist()
-    #     intermediate_sequence = []
-    #     intermediate_list = []
-    #     X[0] = 0
-    #     for i in range(1, len(X)):
-    #         if abs(X[i-1] - X[i]) < self.threshold:
-    #             intermediate_sequence.extend([0, 0])
-    #         elif X[i] > X[i-1]:
-    #             intermediate_sequence.extend([1, 0])
-    #         else:
-    #             intermediate_sequence.extend([0, 1])
-
-    #     for i in range(0, len(intermediate_sequence) - self.window_size, self.stride):
-    #         window = intermediate_sequence[i:(i+self.window_size)]
-    #         intermediate_list.append(window)
-    #     intermediate_list = np.array(intermediate_list)
-    #     kmeans = KMeans(n_clusters=self.n_clusters)
-    #     kmeans.fit(intermediate_list)
-    #     return kmeans.labels_
+            self.X_val = self._discretize(self.X_val)
+            self.X_val = self.X_val.to(torch.float32)
 
     def get_X_shape(self):
         return self.X_train.shape
@@ -263,36 +187,128 @@ class BNCI_LEFT_RIGHT(Dataset):
             return self.X_val[index], self.Y_val[index]
 
 
-class BNCI_4_CLASS(Dataset):
-    def __init__(self):
-        if not BNCI_4_CLASS_DIR.exists():
-            fetch_preprocess_and_save_BNCI2014_001_4_classes()
-        self.dataset = load_concat_dataset(
-            BNCI_4_CLASS_DIR, preload=False, target_name=None)
+class BNCI_LEFT_RIGHT_COMPRESSED(Dataset):
+    def __init__(self, window_size, stride, strategy, train=True, threshold=0.001, n_clusters=128):
+        if not BNCI2014_001_DIR.exists():
+            fetch_BNCI2014_001()
+        self.train = train
+        self.X, self.Y = read_X_and_y(X_BNCI2014_001, Y_BNCI2014_001)
+        self.window_size = window_size
+        self.stride = stride
+        self.threshold = threshold
+        self.n_clusters = n_clusters
 
-    def get_train_and_test_data(self):
-        splitted = self.dataset.split('session')
-        return splitted['0train'], splitted['1test']
+        _, _, timepoints = self.X.shape
+        # self.X, self.Y = self.X[:50], self.Y[:50]
+        self.hamming_window = torch.hamming_window(timepoints)
+        baseline_start = 0
+        baseline_end = 125
+        baseline_mean = torch.mean(
+            self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
+        self.X = self.X - baseline_mean
+        # self.X = self.X[..., 768:1000]
+        # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
+        self.X = F.avg_pool1d(self.X, 3, 2)
+        # self.X = F.max_pool1d(self.X, 3, 2)
+        # self.X = self.X[..., ::3]
+        # self.Y = self.Y.astype(float)
+        # self.Y = self.Y.to(torch.float32)
+        self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
+            self.X, self.Y, test_size=0.2, random_state=43)
+        if self.train:
+            self.X_train = self._compress(self.X_train)
+            # self.X_train = self.X_train.to(torch.float32)
+        else:
+            self.X_val = self._compress(self.X_val)
+            # self.X_val = self.X_val.to(torch.float32)
+
+    def get_X_shape(self):
+        return self.X_train.shape
+
+    def get_vocab_size(self):
+        return len(self.permutations)
+
+    def _compress(self, X):
+        images, channels, timepoints = X.shape
+        X = torch.mean(X, dim=1, keepdim=True)
+        X = self._discretize(X)
+        return X.squeeze(1)
+
+    def _discretize(self, X):
+
+        values = [0, 1]
+        self.permutations = [list(perm)
+                             for perm in product(values, repeat=self.window_size)]
+        images, channels, timepoints = X.shape
+        discretized_X = []
+        for image in range(images):
+            image_sequence = []
+            for channel in range(channels):
+                sequence = X[image, channel]
+                discretized_sequence = self._permute(sequence)
+                image_sequence.append(discretized_sequence)
+            discretized_X.append(image_sequence)
+        return torch.tensor(discretized_X, dtype=torch.long)
+
+    def _permute(self, X):
+        X = X.tolist()
+        new_sequence = []
+        X[0] = 0
+        for i in range(1, len(X)):
+            if X[i] > X[i-1]:
+                X[i] = 1
+            else:
+                X[i] = 0
+        # print(X)
+
+        for i in range(0, len(X) - self.window_size, self.stride):
+            window = X[i:(i+self.window_size)]
+            new_sequence.append(self.permutations.index(window))
+        new_sequence.append(0)
+
+        return new_sequence
+
+    def __len__(self):
+        if self.train:
+            return len(self.X_train)
+        else:
+            return len(self.X_val)
 
     def __getitem__(self, index):
-        return self.dataset[index]
+        if self.train:
+            return self.X_train[index], self.Y_train[index]
+        else:
+            return self.X_val[index], self.Y_val[index]
+# class BNCI_4_CLASS(Dataset):
+#     def __init__(self):
+#         if not BNCI_4_CLASS_DIR.exists():
+#             fetch_preprocess_and_save_BNCI2014_001_4_classes()
+#         self.dataset = load_concat_dataset(
+#             BNCI_4_CLASS_DIR, preload=False, target_name=None)
+
+#     def get_train_and_test_data(self):
+#         splitted = self.dataset.split('session')
+#         return splitted['0train'], splitted['1test']
+
+#     def __getitem__(self, index):
+#         return self.dataset[index]
 
 
-def deconstruct_moabb_dataset(dataset, path):
-    class_samples = {}
-    for sample, label, _ in dataset:
-        if label not in class_samples:
-            class_samples[label] = []
-        class_samples[label].append((sample, label))
-    path.mkdir(parents=True, exist_ok=True)
-    for label, sample in class_samples.items():
-        samples, labels = zip(*sample)
-        samples = torch.tensor(samples)
-        labels = torch.tensor(labels)
-        sample_path = path / f"{label}_samples.pth"
-        torch.save(samples, sample_path)
-        label_path = path / f"{label}_labels.pth"
-        torch.save(labels, label_path)
+# def deconstruct_moabb_dataset(dataset, path):
+#     class_samples = {}
+#     for sample, label, _ in dataset:
+#         if label not in class_samples:
+#             class_samples[label] = []
+#         class_samples[label].append((sample, label))
+#     path.mkdir(parents=True, exist_ok=True)
+#     for label, sample in class_samples.items():
+#         samples, labels = zip(*sample)
+#         samples = torch.tensor(samples)
+#         labels = torch.tensor(labels)
+#         sample_path = path / f"{label}_samples.pth"
+#         torch.save(samples, sample_path)
+#         label_path = path / f"{label}_labels.pth"
+#         torch.save(labels, label_path)
 
 ##################### OLD DATASETS #####################
 

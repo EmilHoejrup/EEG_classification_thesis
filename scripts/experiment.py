@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 from datasets import *
 from trainer import *
-from EEGTransformer import EEGTransformer
+from EEGTransformer import EEGTransformer, EEGTransformerEmb
 from support.utils import *
 import yaml
 import numpy as np
@@ -146,6 +146,53 @@ trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, sche
 trainer.fit(epochs=100, print_metrics=True)
 trainer.plot_train_val_scores()
 
+# %%
+window_size = 7
+stride = 7
+train_dataset = BNCI_LEFT_RIGHT_COMPRESSED(
+    train=True, window_size=window_size, stride=stride, strategy='compress')
+val_dataset = BNCI_LEFT_RIGHT_COMPRESSED(
+    train=False, window_size=window_size, stride=stride, strategy='compress')
+images, timepoints = train_dataset.get_X_shape()
+# vocab_size = train_dataset.get_vocab_size()
+train_dataloader = DataLoader(
+    dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True, )
+val_dataloader = DataLoader(
+    dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True, )
+x, y = next(iter(train_dataloader))
+x.shape
+# %%
+
+# model = XExpTransformer(d_model=200, seq_len=timepoints, ffn_hidden=128,
+#                         n_head=4, details=False, drop_prob=0.1, n_layers=1, max_len=vocab_size)
+LEARNING_RATE = 0.0001
+# model = NewTransformer(embedding_dim=9, vocab_size=vocab_size, dim_ff=32,
+#                        seq_len=channels*timepoints, dropout=0.3)
+# model = EEGConformer(n_classes=2, n_channels=22,
+#  input_window_samples=timepoints, add_log_softmax=False, final_fc_length='auto')
+# model = ConTransformer(seq_len=timepoints,
+#                        n_layers=1, n_head=2, d_model=64, max_len=timepoints)
+# model = VanillaTransformer(num_electrodes=22, num_classes=2, )
+# model = ShallowFBCSPNet(n_chans=22, n_classes=2,
+#                         input_window_samples=timepoints, final_conv_length='auto')
+model = EEGTransformer(seq_len=timepoints, nhead=2, num_classes=2,
+                       depth=2, emb_size=22, expansion=4, dropout=0.1)
+model = EEGTransformerEmb(seq_len=timepoints, nhead=2,
+                          num_classes=2, dropout=0.5)
+# model = Transformer(seq_len=timepoints, max_len=timepoints)
+# IMPLEMENT weight decay
+# %%
+images, timepoints = train_dataset.get_X_shape()
+loss_fun = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(
+    params=model.parameters(), lr=LEARNING_RATE)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                       T_max=EPOCHS - 1)
+trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
+                                      val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer.fit(epochs=50, print_metrics=True)
+
+trainer.plot_train_val_scores()
 # %%
 
 
