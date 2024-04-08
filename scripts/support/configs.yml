@@ -54,3 +54,4 @@ datasets:
   BNCI_LEFT_RIGHT_COMPRESSED:
     window_size: [6, 9, 11]
     stride: [9, 11]
+    strategy: [None]

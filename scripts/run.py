@@ -14,7 +14,7 @@ from new_model import *
 from models import *
 from itertools import product
 from trainer import MultiLabelClassifierTrainer
-from EEGTransformer import EEGTransformer
+from EEGTransformer import EEGTransformer, EEGTransformerEmb
 
 has_gpu = torch.cuda.is_available()
 has_gpu = torch.cuda.is_available()
@@ -53,8 +53,23 @@ def run():
         train_models(train_dataloader, val_dataloader,
                      timepoints)
 
+    elif configs['dataset'] == 'BNCI_LEFT_RIGHT_COMPRESSED':
+        param_combinations = product(*dataset_params.values())
+        for combination in param_combinations:
+            train_dataset = BNCI_LEFT_RIGHT_COMPRESSED(
+                *combination, train=True)
+            val_dataset = BNCI_LEFT_RIGHT_COMPRESSED(*combination, train=False)
+            train_dataloader = DataLoader(
+                dataset=train_dataset, batch_size=train_params['batch_size'], shuffle=True)
+            val_dataloader = DataLoader(
+                dataset=val_dataset, batch_size=train_params['batch_size'], shuffle=True)
+            _, timepoints = train_dataset.get_X_shape()
+            vacab_size = train_dataset.get_vocab_size()
+            train_models(train_dataloader, val_dataloader,
+                         timepoints, combination, vocab_size=vacab_size)
 
-def train_models(train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs):
+
+def train_models(train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs, vocab_size=None):
     models = configs['models_to_train']
     for model_type in models:
         model_params = configs.get('models').get(model_type)
@@ -78,6 +93,9 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             elif model_type == 'EEGTransformer':
                 model = EEGTransformer(
                     **args, seq_len=timepoints)
+            elif model_type == 'EEGTransformerEmb':
+                model = EEGTransformerEmb(
+                    **args, seq_len=timepoints, vocab_size=vocab_size)
 
             train(model, train_dataloader,
                   val_dataloader, timepoints, dataset_combination)

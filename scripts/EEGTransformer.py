@@ -22,9 +22,9 @@ class EEGTransformer(nn.Module):
 
 
 class EEGTransformerEmb(nn.Module):
-    def __init__(self, seq_len, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
+    def __init__(self, seq_len, vocab_size, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
         super(EEGTransformerEmb, self).__init__()
-        self.embedding = nn.Embedding(seq_len, emb_size)
+        self.embedding = nn.Embedding(vocab_size, emb_size)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
         self.clshead = ClassificationHead(seq_len*emb_size, num_classes)
