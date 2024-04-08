@@ -40,7 +40,7 @@ models:
     dropout: [0.1, 0.5]
 datasets:
   BNCI_LEFT_RIGHT:
-    window_size: [5, 7, 9, 11, 17, 33]
-    stride: [1, 3, 9, 11]
+    window_size: [11, 17, 33]
+    stride: [11, 17, 33]
     strategy: ["permute"]
   BNCI_LEFT_RIGHT_CONTINUOUS:
