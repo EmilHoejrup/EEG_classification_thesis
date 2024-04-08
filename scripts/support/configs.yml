@@ -2,7 +2,7 @@ models_to_train: ["EEGTransformer"]
 dataset: "BNCI_LEFT_RIGHT"
 
 train_params:
-  epochs: 300
+  epochs: 900
   batch_size: 64
   lr: 0.0001
   classes: 2
@@ -40,7 +40,7 @@ models:
     dropout: [0.1, 0.5]
 datasets:
   BNCI_LEFT_RIGHT:
-    window_size: [11, 17, 33]
-    stride: [11, 17, 33]
+    window_size: [6, 7, 8, 9, 10, 11]
+    stride: [9, 10, 11, 12, 13, 14]
     strategy: ["permute"]
   BNCI_LEFT_RIGHT_CONTINUOUS:
