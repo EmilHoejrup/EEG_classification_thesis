@@ -29,7 +29,7 @@ def run():
     dataset_name = configs['dataset']
     dataset_params = configs.get('datasets').get(dataset_name)
     train_params = configs.get('train_params')
-    if configs['dataset'] == 'BNCI_LEFT_RIGHT':
+    if configs['dataset'] == 'BNCI_LEFT_RIGHT' or configs['dataset'] == 'BNCI_LEFT_RIGHT_NEW_PE':
         param_combinations = product(*dataset_params.values())
         for combination in param_combinations:
             train_dataset = BNCI_LEFT_RIGHT(*combination, train=True)
@@ -103,7 +103,7 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
 
 def train(model, train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs):
 
-    with wandb.init(project='EEG-Transformers 2.0'):
+    with wandb.init(project='EEG-Transformers 3.0'):
         if dataset_combination:
             configs.update({'model': model.__class__.__name__,
                             'window_size': dataset_combination[0], 'stride': dataset_combination[1], 'dataset_strategy': dataset_combination[2], 'sequence length': timepoints})

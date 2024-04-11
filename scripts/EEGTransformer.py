@@ -4,6 +4,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from einops.layers.torch import Rearrange, Reduce
+import math
 
 
 class EEGTransformer(nn.Module):
@@ -12,9 +13,11 @@ class EEGTransformer(nn.Module):
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
         self.clshead = ClassificationHead(seq_len*emb_size, num_classes)
+        self.positional_encoding = _PositionalEncoding(emb_size)
 
     def forward(self, x):
         x = rearrange(x, 'b c t -> b t c')
+        # x = self.positional_encoding(x)
         x = self.transformer_encoder(x)
         # x, out = self.clshead(x)
         out = self.clshead(x)
@@ -36,6 +39,23 @@ class EEGTransformerEmb(nn.Module):
         # x, out = self.clshead(x)
         out = self.clshead(x)
         return out
+
+
+class _PositionalEncoding(nn.Module):
+    def __init__(self, emb_size, max_len=5000):
+        super(_PositionalEncoding, self).__init__()
+        position = torch.arange(0, max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, emb_size, 2)
+                             * -(math.log(10000.0) / emb_size))
+        pe = torch.zeros(max_len, emb_size)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + self.pe[:, :x.size(1)]
+        return x
 
 
 class _MultiHeadAttention(nn.Module):

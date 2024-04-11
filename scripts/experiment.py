@@ -43,8 +43,8 @@ EPOCHS = 3
 
 
 # %%
-window_size = 7
-stride = 7
+window_size = 8
+stride = 11
 train_dataset = BNCI_LEFT_RIGHT(
     train=True, window_size=window_size, stride=stride, strategy='permute')
 val_dataset = BNCI_LEFT_RIGHT(
@@ -122,8 +122,8 @@ model = EEGConformer(n_classes=2, n_channels=22,
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=50, final_conv_length='auto')
 # model = SimpleViT()
-model = EEGTransformer(seq_len=timepoints, nhead=2, num_classes=2,
-                       depth=2, emb_size=22, expansion=4, dropout=0.5)
+# model = EEGTransformer(seq_len=timepoints, nhead=2, num_classes=2,
+#                        depth=2, emb_size=22, expansion=4, dropout=0.5)
 # model = ATCNet(n_channels=22, n_outputs=2, n_windows=1,
 #                add_log_softmax=False, conv_block_kernel_length_1=4, conv_block_kernel_length_2=4, conv_block_pool_size_1=8, conv_block_pool_size_2=7, tcn_kernel_size=2)
 # model = ATCNet(in_channels=22, num_classes=2)
@@ -195,6 +195,52 @@ trainer.fit(epochs=50, print_metrics=True)
 trainer.plot_train_val_scores()
 # %%
 
+window_size = 3
+stride = 3
+train_dataset = BNCI_LEFT_RIGHT_NEW_PE(
+    train=True, window_size=window_size, stride=stride, strategy='permute')
+val_dataset = BNCI_LEFT_RIGHT_NEW_PE(
+    train=False, window_size=window_size, stride=stride, strategy='permute')
+images, channels, timepoints = train_dataset.get_X_shape()
+# vocab_size = train_dataset.get_vocab_size()
+train_dataloader = DataLoader(
+    dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True, )
+val_dataloader = DataLoader(
+    dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True, )
+x, y = next(iter(train_dataloader))
+x.shape
+# %%
+
+# model = XExpTransformer(d_model=200, seq_len=timepoints, ffn_hidden=128,
+#                         n_head=4, details=False, drop_prob=0.1, n_layers=1, max_len=vocab_size)
+LEARNING_RATE = 0.0001
+# model = NewTransformer(embedding_dim=9, vocab_size=vocab_size, dim_ff=32,
+#                        seq_len=channels*timepoints, dropout=0.3)
+# model = EEGConformer(n_classes=2, n_channels=22,
+#  input_window_samples=timepoints, add_log_softmax=False, final_fc_length='auto')
+# model = ConTransformer(seq_len=timepoints,
+#                        n_layers=1, n_head=2, d_model=64, max_len=timepoints)
+# model = VanillaTransformer(num_electrodes=22, num_classes=2, )
+# model = ShallowFBCSPNet(n_chans=22, n_classes=2,
+#                         input_window_samples=timepoints, final_conv_length='auto')
+model = EEGTransformer(seq_len=timepoints, nhead=2, num_classes=2,
+                       depth=2, emb_size=22, expansion=4, dropout=0.1)
+# model = Transformer(seq_len=timepoints, max_len=timepoints)
+# IMPLEMENT weight decay
+# %%
+images, channels, timepoints = train_dataset.get_X_shape()
+loss_fun = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(
+    params=model.parameters(), lr=LEARNING_RATE)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                       T_max=EPOCHS - 1)
+trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
+                                      val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer.fit(epochs=50, print_metrics=True)
+
+trainer.plot_train_val_scores()
+
+# %%
 
 x, y = next(iter(train_dataloader))
 x.shape
