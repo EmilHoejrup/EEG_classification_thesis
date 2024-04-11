@@ -129,10 +129,10 @@ class BNCI_LEFT_RIGHT_NEW_PE(Dataset):
             self.X, self.Y, test_size=0.2, random_state=43)
         if self.train:
             self.X_train = self._discretize(self.X_train)
-            self.X_train = self.X_train.to(torch.float32)
+            # self.X_train = self.X_train.to(torch.float32)
         else:
             self.X_val = self._discretize(self.X_val)
-            self.X_val = self.X_val.to(torch.float32)
+            # self.X_val = self.X_val.to(torch.float32)
 
     def get_X_shape(self):
         return self.X_train.shape
@@ -223,10 +223,10 @@ class BNCI_LEFT_RIGHT(Dataset):
             self.X, self.Y, test_size=0.2, random_state=43)
         if self.train:
             self.X_train = self._discretize(self.X_train)
-            self.X_train = self.X_train.to(torch.float32)
+            # self.X_train = self.X_train.to(torch.float32)
         else:
             self.X_val = self._discretize(self.X_val)
-            self.X_val = self.X_val.to(torch.float32)
+            # self.X_val = self.X_val.to(torch.float32)
 
     def get_X_shape(self):
         return self.X_train.shape

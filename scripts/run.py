@@ -39,8 +39,9 @@ def run():
             val_dataloader = DataLoader(
                 dataset=val_dataset, batch_size=train_params['batch_size'], shuffle=True)
             _, _, timepoints = train_dataset.get_X_shape()
+            vocab_size = train_dataset.get_vocab_size()
             train_models(train_dataloader, val_dataloader,
-                         timepoints, combination)
+                         timepoints, combination, vocab_size=vocab_size)
 
     elif configs['dataset'] == 'BNCI_LEFT_RIGHT_CONTINUOUS':
         train_dataset = BNCI_LEFT_RIGHT_CONTINUOUS(train=True)
@@ -92,7 +93,7 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
                     **args, seq_len=timepoints)
             elif model_type == 'EEGTransformer':
                 model = EEGTransformer(
-                    **args, seq_len=timepoints)
+                    **args, seq_len=timepoints, vocab_size=vocab_size)
             elif model_type == 'EEGTransformerEmb':
                 model = EEGTransformerEmb(
                     **args, seq_len=timepoints, vocab_size=vocab_size)

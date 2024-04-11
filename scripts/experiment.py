@@ -50,6 +50,7 @@ train_dataset = BNCI_LEFT_RIGHT(
 val_dataset = BNCI_LEFT_RIGHT(
     train=False, window_size=window_size, stride=stride, strategy='permute')
 images, channels, timepoints = train_dataset.get_X_shape()
+vocab_size = train_dataset.get_vocab_size()
 # vocab_size = train_dataset.get_vocab_size()
 train_dataloader = DataLoader(
     dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True, )
@@ -65,13 +66,13 @@ LEARNING_RATE = 0.0001
 # model = NewTransformer(embedding_dim=9, vocab_size=vocab_size, dim_ff=32,
 #                        seq_len=channels*timepoints, dropout=0.3)
 # model = EEGConformer(n_classes=2, n_channels=22,
-#  input_window_samples=timepoints, add_log_softmax=False, final_fc_length='auto')
+#                      input_window_samples=timepoints, add_log_softmax=False, final_fc_length='auto')
 # model = ConTransformer(seq_len=timepoints,
 #                        n_layers=1, n_head=2, d_model=64, max_len=timepoints)
 # model = VanillaTransformer(num_electrodes=22, num_classes=2, )
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=timepoints, final_conv_length='auto')
-model = EEGTransformer(seq_len=timepoints, nhead=2, num_classes=2,
+model = EEGTransformer(seq_len=timepoints, vocab_size=vocab_size, nhead=2, num_classes=2,
                        depth=2, emb_size=22, expansion=4, dropout=0.1)
 # model = Transformer(seq_len=timepoints, max_len=timepoints)
 # IMPLEMENT weight decay
@@ -202,6 +203,7 @@ train_dataset = BNCI_LEFT_RIGHT_NEW_PE(
 val_dataset = BNCI_LEFT_RIGHT_NEW_PE(
     train=False, window_size=window_size, stride=stride, strategy='permute')
 images, channels, timepoints = train_dataset.get_X_shape()
+vocab_size = train_dataset.get_vocab_size()
 # vocab_size = train_dataset.get_vocab_size()
 train_dataloader = DataLoader(
     dataset=train_dataset,  batch_size=BATCH_SIZE, shuffle=True, )
@@ -223,7 +225,7 @@ LEARNING_RATE = 0.0001
 # model = VanillaTransformer(num_electrodes=22, num_classes=2, )
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=timepoints, final_conv_length='auto')
-model = EEGTransformer(seq_len=timepoints, nhead=2, num_classes=2,
+model = EEGTransformer(seq_len=timepoints, vocab_size=vocab_size, nhead=2, num_classes=2,
                        depth=2, emb_size=22, expansion=4, dropout=0.1)
 # model = Transformer(seq_len=timepoints, max_len=timepoints)
 # IMPLEMENT weight decay
