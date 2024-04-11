@@ -104,7 +104,7 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
 
 def train(model, train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs):
 
-    with wandb.init(project='EEG-Transformers 3.0'):
+    with wandb.init(project='EEG-Transformers 4.0 (embedding added)'):
         if dataset_combination:
             configs.update({'model': model.__class__.__name__,
                             'window_size': dataset_combination[0], 'stride': dataset_combination[1], 'dataset_strategy': dataset_combination[2], 'sequence length': timepoints})
