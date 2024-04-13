@@ -214,7 +214,7 @@ class BNCI_LEFT_RIGHT(Dataset):
         self.X = self.X - baseline_mean
         # self.X = self.X[..., 768:1000]
         # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
-        # self.X = F.avg_pool1d(self.X, 3, 2)
+        self.X = F.avg_pool1d(self.X, 3, 2)
         # self.X = F.max_pool1d(self.X, 3, 2)
         # self.X = self.X[..., ::3]
         # self.Y = self.Y.astype(float)
