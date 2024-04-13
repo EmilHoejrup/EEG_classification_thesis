@@ -1,5 +1,5 @@
-models_to_train: ["EEGTransformer"]
-dataset: "BNCI_LEFT_RIGHT"
+models_to_train: ["EEGTransformerEmb"]
+dataset: "BNCI_LEFT_RIGHT_NEW_PE"
 
 train_params:
   epochs: 900
@@ -37,14 +37,14 @@ models:
     depth: [2]
     emb_size: [22]
     expansion: [4]
-    dropout: [0.5, 0.8]
+    dropout: [0.7]
   EEGTransformerEmb:
     nhead: [2]
     num_classes: [2]
     depth: [2]
-    emb_size: [22, 32, 64, 128]
+    emb_size: [10, 20, 40]
     expansion: [4]
-    dropout: [0.5]
+    dropout: [0.7]
 datasets:
   BNCI_LEFT_RIGHT:
     window_size: [6, 8, 11]

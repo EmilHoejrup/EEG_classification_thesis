@@ -225,8 +225,10 @@ LEARNING_RATE = 0.0001
 # model = VanillaTransformer(num_electrodes=22, num_classes=2, )
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=timepoints, final_conv_length='auto')
-model = EEGTransformer(seq_len=timepoints, vocab_size=vocab_size, nhead=2, num_classes=2,
-                       depth=2, emb_size=22, expansion=4, dropout=0.1)
+# model = EEGTransformer(seq_len=timepoints, vocab_size=vocab_size, nhead=2, num_classes=2,
+#                        depth=2, emb_size=22, expansion=4, dropout=0.1)
+model = EEGTransformerEmb(seq_len=timepoints, vocab_size=vocab_size, nhead=2,
+                          num_classes=2,  depth=2, emb_size=40, expansion=4, dropout=0.1)
 # model = Transformer(seq_len=timepoints, max_len=timepoints)
 # IMPLEMENT weight decay
 # %%
