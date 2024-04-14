@@ -63,6 +63,7 @@ class _SpatialEmbedding(nn.Module):
             nn.BatchNorm2d(emb_size),
             nn.ELU(),
             nn.Dropout(0.5),
+            nn.AvgPool2d((1, 15), (1, 5))
         )
 
     def forward(self, x):
