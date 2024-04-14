@@ -32,6 +32,7 @@ class EEGTransformerEmb(nn.Module):
         super(EEGTransformerEmb, self).__init__()
         self.embedding = nn.Embedding(vocab_size, emb_size)
         self.spatial_conv = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
+        self.spatial_embedding = _SpatialEmbedding(emb_size, vocab_size)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
         self.clshead = ClassificationHead(seq_len*emb_size, num_classes)
@@ -39,18 +40,33 @@ class EEGTransformerEmb(nn.Module):
     def forward(self, x):
         # x = torch.unsqueeze(x, dim=1)
         x = self.embedding(x)
-        print("Embedding shape: ", x.shape)
+        # print("Embedding shape: ", x.shape)
         x = rearrange(x, 'b c t e -> b e c t')
-        print("Rearranged shape: ", x.shape)
-        x = self.spatial_conv(x)
-        print("Spatial conv shape: ", x.shape)
+        # print("Rearranged shape: ", x.shape)
+        # x = self.spatial_conv(x)
+        x = self.spatial_embedding(x)
+        # print("Spatial conv shape: ", x.shape)
         x = x.squeeze(dim=2)
-        print("Squeezed shape: ", x.shape)
+        # print("Squeezed shape: ", x.shape)
         x = rearrange(x, 'b e t -> b t e')
         x = self.transformer_encoder(x)
         # x, out = self.clshead(x)
         out = self.clshead(x)
         return out
+
+
+class _SpatialEmbedding(nn.Module):
+    def __init__(self, emb_size, vocab_size):
+        super(_SpatialEmbedding, self).__init__()
+        self.spatial = nn.Sequential(
+            nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1)),
+            nn.BatchNorm2d(emb_size),
+            nn.ELU(),
+            nn.Dropout(0.5),
+        )
+
+    def forward(self, x):
+        return self.spatial(x)
 
 
 class _PositionalEncoding(nn.Module):
