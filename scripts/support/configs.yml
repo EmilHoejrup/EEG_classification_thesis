@@ -1,4 +1,4 @@
-models_to_train: ["EEGTransformerEmb, EEGTransformer"]
+models_to_train: ["EEGTransformerEmb", "EEGTransformer"]
 dataset: "BNCI_LEFT_RIGHT_NEW_PE"
 
 train_params:

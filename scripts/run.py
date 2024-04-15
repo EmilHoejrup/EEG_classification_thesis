@@ -14,7 +14,8 @@ from new_model import *
 from models import *
 from itertools import product
 from trainer import MultiLabelClassifierTrainer
-from EEGTransformer import ConformerCopy, EEGTransformer, EEGTransformerEmb
+from EEGTransformer import EEGTransformer, EEGTransformerEmb
+from ConformerCopy import ConformerCopy
 
 has_gpu = torch.cuda.is_available()
 has_gpu = torch.cuda.is_available()
