@@ -15,7 +15,8 @@ import torch
 import torch.nn as nn
 from datasets import *
 from trainer import *
-from EEGTransformer import ConformerCopy, EEGTransformer, EEGTransformerEmb
+from ConformerCopy import ConformerCopy
+from EEGTransformer import EEGTransformer, EEGTransformerEmb
 from support.utils import *
 import yaml
 import numpy as np
@@ -242,7 +243,7 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                        T_max=EPOCHS - 1)
 trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
                                       val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
-trainer.fit(epochs=50, print_metrics=True)
+trainer.fit(epochs=1, print_metrics=True)
 
 trainer.plot_train_val_scores()
 
