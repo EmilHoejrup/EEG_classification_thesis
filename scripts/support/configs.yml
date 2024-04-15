@@ -46,7 +46,12 @@ models:
     expansion: [4]
     dropout: [0.7]
   ConformerCopy:
+    nhead: [2]
+    num_classes: [2]
+    depth: [2]
     emb_size: [20, 40]
+    expansion: [4]
+    dropout: [0.7]
 datasets:
   BNCI_LEFT_RIGHT:
     window_size: [6, 8, 11]
