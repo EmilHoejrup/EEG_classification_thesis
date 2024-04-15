@@ -1,5 +1,5 @@
-models_to_train: ["EEGTransformerEmb"]
-dataset: "BNCI_LEFT_RIGHT"
+models_to_train: ["ConformerCopy"]
+dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
 
 train_params:
   epochs: 900
@@ -45,6 +45,8 @@ models:
     emb_size: [20]
     expansion: [4]
     dropout: [0.7]
+  ConformerCopy:
+    emb_size: [20, 40]
 datasets:
   BNCI_LEFT_RIGHT:
     window_size: [6, 8, 11]
