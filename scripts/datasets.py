@@ -209,13 +209,13 @@ class BNCI_LEFT_RIGHT(Dataset):
         self.hamming_window = torch.hamming_window(timepoints)
         baseline_start = 0
         baseline_end = 125
-        baseline_mean = torch.mean(
-            self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
-        self.X = self.X - baseline_mean
+        # baseline_mean = torch.mean(
+        #     self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
+        # self.X = self.X - baseline_mean
         # self.X = self.X[..., 768:1000]
         # self.X = self.X * self.hamming_window.view(1, 1, timepoints)
-        self.X = F.avg_pool1d(self.X, 3, 2)
-        # self.X = F.max_pool1d(self.X, 3, 2)
+        # self.X = F.avg_pool1d(self.X, 3, 2)
+        self.X = F.max_pool1d(self.X, 3, 3)
         # self.X = self.X[..., ::3]
         # self.Y = self.Y.astype(float)
         # self.Y = self.Y.to(torch.float32)

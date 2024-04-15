@@ -1,5 +1,5 @@
 models_to_train: ["EEGTransformerEmb", "EEGTransformer"]
-dataset: "BNCI_LEFT_RIGHT_NEW_PE"
+dataset: "BNCI_LEFT_RIGHT"
 
 train_params:
   epochs: 900
@@ -55,7 +55,7 @@ models:
 datasets:
   BNCI_LEFT_RIGHT:
     window_size: [6, 8, 11]
-    stride: [1, 3, 7, 9, 11, 13]
+    stride: [1, 2, 7, 9, 11]
     strategy: ["permute"]
   BNCI_LEFT_RIGHT_CONTINUOUS:
   BNCI_LEFT_RIGHT_COMPRESSED:
