@@ -1,4 +1,5 @@
 # %%
+from GraphFormer import GraphFormer
 from braindecode.models import ATCNet
 from torch import nn
 from einops.layers.torch import Rearrange
@@ -121,8 +122,10 @@ b, c, timepoints = train_dataset.get_X_shape()
 #                         input_window_samples=timepoints, final_conv_length='auto')
 # model = EEGConformer(n_classes=2, n_channels=22,
 #                      input_window_samples=timepoints, final_fc_length='auto', add_log_softmax=False)
-model = ConformerCopy(seq_len=timepoints, vocab_size=timepoints,
-                      nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5)
+# model = ConformerCopy(seq_len=timepoints, vocab_size=timepoints,
+#                       nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5)
+model = GraphFormer(seq_len=timepoints, vocab_size=vocab_size, n_graph_features=timepoints, channels=22, K=2, nhead=2,
+                    num_classes=2, depth=2, emb_size=40, expansion=4, dropout=0.1)
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=50, final_conv_length='auto')
 # model = SimpleViT()
@@ -232,6 +235,8 @@ LEARNING_RATE = 0.0001
 #                        depth=2, emb_size=22, expansion=4, dropout=0.1)
 model = EEGTransformerEmb(seq_len=timepoints, vocab_size=vocab_size, nhead=2,
                           num_classes=2,  depth=2, emb_size=40, expansion=4, dropout=0.1)
+model = GraphFormer(seq_len=timepoints, vocab_size=vocab_size, n_graph_features=timepoints, channels=22, K=2, nhead=2,
+                    num_classes=2, depth=2, emb_size=40, expansion=4, dropout=0.1)
 # model = Transformer(seq_len=timepoints, max_len=timepoints)
 # IMPLEMENT weight decay
 # %%
