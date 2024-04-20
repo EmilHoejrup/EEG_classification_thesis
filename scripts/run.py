@@ -16,6 +16,7 @@ from itertools import product
 from trainer import MultiLabelClassifierTrainer
 from EEGTransformer import EEGTransformer, EEGTransformerEmb
 from ConformerCopy import ConformerCopy
+from GraphFormer import GraphFormer
 
 has_gpu = torch.cuda.is_available()
 has_gpu = torch.cuda.is_available()
@@ -101,6 +102,9 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             elif model_type == 'ConformerCopy':
                 model = ConformerCopy(
                     **args, vocab_size=vocab_size)
+            elif model_type == 'GraphFormer':
+                model = GraphFormer(
+                    **args, seq_len=timepoints, n_graph_features=timepoints, channels=22, K=2)
 
             train(model, train_dataloader,
                   val_dataloader, timepoints, dataset_combination)
@@ -108,7 +112,7 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
 
 def train(model, train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs):
 
-    with wandb.init(project='EEG-Transformers 9.0 (LR maxpool)'):
+    with wandb.init(project='EEG-Transformers 10.0 Graphformer first'):
         if dataset_combination:
             configs.update({'model': model.__class__.__name__,
                             'window_size': dataset_combination[0], 'stride': dataset_combination[1], 'dataset_strategy': dataset_combination[2], 'sequence length': timepoints})

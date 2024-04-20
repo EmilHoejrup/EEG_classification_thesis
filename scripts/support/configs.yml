@@ -1,5 +1,5 @@
-models_to_train: ["EEGTransformerEmb", "EEGTransformer"]
-dataset: "BNCI_LEFT_RIGHT"
+models_to_train: ["GraphFormer"]
+dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
 
 train_params:
   epochs: 900
@@ -50,6 +50,13 @@ models:
     num_classes: [2]
     depth: [2]
     emb_size: [20, 40]
+    expansion: [4]
+    dropout: [0.7]
+  GraphFormer:
+    nhead: [2]
+    num_classes: [2]
+    depth: [2]
+    emb_size: [20]
     expansion: [4]
     dropout: [0.7]
 datasets:

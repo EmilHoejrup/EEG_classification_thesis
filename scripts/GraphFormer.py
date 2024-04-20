@@ -12,7 +12,7 @@ from torch_geometric.utils import dense_to_sparse
 
 
 class GraphFormer(nn.Module):
-    def __init__(self, vocab_size, seq_len, n_graph_features, channels, K, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
+    def __init__(self, seq_len, n_graph_features, channels, K, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
         super(GraphFormer, self).__init__()
         self.graph_conv = _GraphConvolution(
             seq_len, n_graph_features, channels, K, dropout)
@@ -33,15 +33,15 @@ class GraphFormer(nn.Module):
         # print("Rearranged shape: ", x.shape)
         x = self.patch_embed(x)
         # x = self.spatial_embedding(x)
-        print("Spatial emb size shape: ", x.shape)
+        # print("Spatial emb size shape: ", x.shape)
         # x = self.spatial_conv(x)
         # print("Spatial conv shape: ", x.shape)
         x = x.squeeze(dim=2)
-        print("Squeezed shape: ", x.shape)
+        # print("Squeezed shape: ", x.shape)
         # x = rearrange(x, 'b e t -> b t e')
-        print("Rearranged shape: ", x.shape)
+        # print("Rearranged shape: ", x.shape)
         x = self.transformer_encoder(x)
-        print("Transformer shape: ", x.shape)
+        # print("Transformer shape: ", x.shape)
         # x, out = self.clshead(x)
         out = self.clshead(x)
         return out
