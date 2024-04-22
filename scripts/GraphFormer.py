@@ -5,7 +5,6 @@ from torch import nn
 import torch.nn.functional as F
 from einops.layers.torch import Rearrange, Reduce
 import math
-from torch_geometric_temporal import GraphConstructor
 from torch_geometric.nn import GCNConv, SGConv
 from torch_geometric.utils import dense_to_sparse
 
@@ -39,6 +38,67 @@ class GraphFormer(nn.Module):
         # x, out = self.clshead(x)
         out = self.clshead(x)
         return out
+
+
+class GraphConstructor(nn.Module):
+    """
+    An implementation of the graph learning layer to construct an adjacency matrix.
+    For details see this paper: `"Connecting the Dots: Multivariate Time Series Forecasting with Graph Neural Networks."
+    <https://arxiv.org/pdf/2005.11650.pdf>`_
+    Args:
+        nnodes (int): Number of nodes in the graph.
+        k (int): Number of largest values to consider in constructing the neighbourhood of a node (pick the "nearest" k nodes).
+        dim (int): Dimension of the node embedding.
+        alpha (float, optional): Tanh alpha for generating adjacency matrix, alpha controls the saturation rate
+        xd (int, optional): Static feature dimension, default None.
+    """
+
+    def __init__(
+            self, nnodes: int, k: int, dim: int, alpha: float):
+        super(GraphConstructor, self).__init__()
+
+        self._embedding1 = nn.Embedding(nnodes, dim)
+        self._embedding2 = nn.Embedding(nnodes, dim)
+        self._linear1 = nn.Linear(dim, dim)
+        self._linear2 = nn.Linear(dim, dim)
+
+        self._k = k
+        self._alpha = alpha
+
+        self._reset_parameters()
+
+    def _reset_parameters(self):
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+            else:
+                nn.init.uniform_(p)
+
+    def forward(
+            self, idx: torch.LongTensor) -> torch.FloatTensor:
+        """
+        Making a forward pass to construct an adjacency matrix from node embeddings.
+        Arg types:
+            * **idx** (Pytorch Long Tensor) - Input indices, a permutation of the number of nodes, default None (no permutation).
+        Return types:
+            * **A** (PyTorch Float Tensor) - Adjacency matrix constructed from node embeddings.
+        """
+        nodevec1 = self._embedding1(idx)
+        nodevec2 = self._embedding2(idx)
+
+        nodevec1 = torch.tanh(self._alpha * self._linear1(nodevec1))
+        nodevec2 = torch.tanh(self._alpha * self._linear2(nodevec2))
+
+        a = torch.mm(nodevec1, nodevec2.transpose(1, 0)) - torch.mm(
+            nodevec2, nodevec1.transpose(1, 0)
+        )
+        A = F.relu(torch.tanh(self._alpha * a))
+        mask = torch.zeros(idx.size(0), idx.size(0)).to(A.device)
+        mask.fill_(float("0"))
+        s1, t1 = A.topk(self._k, 1)
+        mask.scatter_(1, t1, s1.fill_(1))
+        A = A * mask
+        return A
 
 
 class _GraphConvolution(nn.Module):
