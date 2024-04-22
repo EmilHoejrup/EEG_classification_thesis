@@ -93,7 +93,7 @@ class GraphConstructor(nn.Module):
             nodevec2, nodevec1.transpose(1, 0)
         )
         A = F.relu(torch.tanh(self._alpha * a))
-        mask = torch.zeros(idx.size(0), idx.size(0)).to(A.device)
+        mask = torch.zeros(idx.size(0), idx.size(0))
         mask.fill_(float("0"))
         s1, t1 = A.topk(self._k, 1)
         mask.scatter_(1, t1, s1.fill_(1))
