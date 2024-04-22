@@ -1,8 +1,7 @@
 
-import torch.nn as nn
 from einops import rearrange
 import torch
-from torch import Tensor, nn
+from torch import nn
 import torch.nn.functional as F
 from einops.layers.torch import Rearrange, Reduce
 import math
@@ -12,34 +11,29 @@ from torch_geometric.utils import dense_to_sparse
 
 
 class GraphFormer(nn.Module):
-    def __init__(self, seq_len, n_graph_features, channels, K, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
+    def __init__(self, seq_len, K, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
         super(GraphFormer, self).__init__()
-        self.graph_conv = _GraphConvolution(
-            seq_len, n_graph_features, channels, K, dropout)
-        self.spatial_conv = nn.Conv2d(
-            emb_size, emb_size, (channels, 1), (1, 1))
-        # self.spatial_embedding = _SpatialEmbedding(emb_size, vocab_size)
-        self.patch_embed = PatchEmbedding(emb_size)
+        # self.embedding = nn.Embedding(vocab_size, emb_size)
+        self.spatial_conv = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
+        self.graph_conv = _GraphConvolution(seq_len, seq_len, 22, K)
+        self.spatial_embedding = _SpatialEmbedding(emb_size)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
-        self.clshead = ClassificationHead(num_classes)
+        self.clshead = ClassificationHead(194*emb_size, num_classes)
 
     def forward(self, x):
         # x = torch.unsqueeze(x, dim=1)
-        x = self.graph_conv(x)
         x = x.unsqueeze(dim=1)
         # print("Embedding shape: ", x.shape)
         # x = rearrange(x, 'b c t e -> b e c t')
         # print("Rearranged shape: ", x.shape)
-        x = self.patch_embed(x)
-        # x = self.spatial_embedding(x)
-        # print("Spatial emb size shape: ", x.shape)
+        x = self.graph_conv(x)
         # x = self.spatial_conv(x)
+        x = self.spatial_embedding(x)
         # print("Spatial conv shape: ", x.shape)
         x = x.squeeze(dim=2)
         # print("Squeezed shape: ", x.shape)
-        # x = rearrange(x, 'b e t -> b t e')
-        # print("Rearranged shape: ", x.shape)
+        x = rearrange(x, 'b e t -> b t e')
         x = self.transformer_encoder(x)
         # print("Transformer shape: ", x.shape)
         # x, out = self.clshead(x)
@@ -70,46 +64,20 @@ class _GraphConvolution(nn.Module):
         return out
 
 
-# class _SpatialEmbedding(nn.Module):
-#     def __init__(self, emb_size, vocab_size):
-#         super(_SpatialEmbedding, self).__init__()
-#         self.spatial = nn.Sequential(
-#             nn.Conv2d(1, emb_size, (1, emb_size), (1, 1)),
-#             nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1)),
-#             nn.BatchNorm2d(emb_size),
-#             nn.ELU(),
-#             nn.Dropout(0.5),
-#             nn.AvgPool2d((1, 15), (1, 5))
-#         )
-
-#     def forward(self, x):
-#         return self.spatial(x)
-class PatchEmbedding(nn.Module):
-    def __init__(self, emb_size=40):
-        # self.patch_size = patch_size
-        super().__init__()
-
-        self.shallownet = nn.Sequential(
-            nn.Conv2d(1, 40, (1, 25), (1, 1)),
-            nn.Conv2d(40, 40, (22, 1), (1, 1)),
-            nn.BatchNorm2d(40),
+class _SpatialEmbedding(nn.Module):
+    def __init__(self, emb_size):
+        super(_SpatialEmbedding, self).__init__()
+        self.spatial = nn.Sequential(
+            nn.Conv2d(1, emb_size, (1, emb_size), (1, 1)),
+            nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1)),
+            nn.BatchNorm2d(emb_size),
             nn.ELU(),
-            # pooling acts as slicing to obtain 'patch' along the time dimension as in ViT
-            nn.AvgPool2d((1, 75), (1, 15)),
             nn.Dropout(0.5),
+            nn.AvgPool2d((1, 15), (1, 5))
         )
 
-        self.projection = nn.Sequential(
-            # transpose, conv could enhance fiting ability slightly
-            nn.Conv2d(40, emb_size, (1, 1), stride=(1, 1)),
-            Rearrange('b e (h) (w) -> b (h w) e'),
-        )
-
-    def forward(self, x: Tensor) -> Tensor:
-        b, _, _, _ = x.shape
-        x = self.shallownet(x)
-        x = self.projection(x)
-        return x
+    def forward(self, x):
+        return self.spatial(x)
 
 
 class _PositionalEncoding(nn.Module):
@@ -202,38 +170,18 @@ class _PositionwiseFeedforward(nn.Module):
         return self.net(x)
 
 
-# class ClassificationHead(nn.Sequential):
-#     def __init__(self, emb_size, n_classes):
-#         super().__init__()
-
-#         # # global average pooling
-#         # self.clshead = nn.Sequential(
-#         #     Reduce('b n e -> b e', reduction='mean'),
-#         #     nn.LayerNorm(emb_size),
-#         #     nn.Linear(emb_size, n_classes)
-#         # )
-#         self.fc = nn.Sequential(
-#             nn.Linear(emb_size, 256),
-#             nn.ELU(),
-#             nn.Dropout(0.5),
-#             nn.Linear(256, 32),
-#             nn.ELU(),
-#             nn.Dropout(0.3),
-#             nn.Linear(32, n_classes)
-#         )
-
-#     def forward(self, x):
-#         x = x.contiguous().view(x.size(0), -1)
-#         out = self.fc(x)
-#         return out
-
-
-class ClassificationHead(nn.Module):
-    def __init__(self, n_classes):
+class ClassificationHead(nn.Sequential):
+    def __init__(self, emb_size, n_classes):
         super().__init__()
 
+        # global average pooling
+        self.clshead = nn.Sequential(
+            Reduce('b n e -> b e', reduction='mean'),
+            nn.LayerNorm(emb_size),
+            nn.Linear(emb_size, n_classes)
+        )
         self.fc = nn.Sequential(
-            nn.Linear(0, 256),  # Placeholder for dynamic input size
+            nn.Linear(emb_size, 256),
             nn.ELU(),
             nn.Dropout(0.5),
             nn.Linear(256, 32),
@@ -243,15 +191,6 @@ class ClassificationHead(nn.Module):
         )
 
     def forward(self, x):
-        # Compute the input size dynamically
-        input_size = x.size(1) * x.size(2)
-
-        # Update the first linear layer with the dynamic input size
-        self.fc[0] = nn.Linear(input_size, 256)
-
-        # Flatten the input
-        x = x.view(x.size(0), -1)
-
-        # Forward pass through the network
+        x = x.contiguous().view(x.size(0), -1)
         out = self.fc(x)
         return out

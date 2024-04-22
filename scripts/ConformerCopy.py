@@ -88,7 +88,7 @@ class _SpatialEmbedding(nn.Module):
     def __init__(self, emb_size, vocab_size):
         super(_SpatialEmbedding, self).__init__()
         self.spatial = nn.Sequential(
-            # nn.Conv2d(1, emb_size, (1, emb_size), (1, 1)),
+            nn.Conv2d(1, emb_size, (1, emb_size), (1, 1)),
             nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1)),
             nn.BatchNorm2d(emb_size),
             nn.ELU(),

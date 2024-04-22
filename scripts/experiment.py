@@ -113,6 +113,7 @@ val_dataloader = DataLoader(
 # model = ATCNet(in_channels=22, num_classes=2,)
 # model = EEGConformer(n_outputs=2, n_channels=64, )
 b, c, timepoints = train_dataset.get_X_shape()
+
 # model = NewTransformer(seq_len=timepoints*c, vocab_size=(timepoints*c), embedding_dim=9)
 # model = ConTransformer(drop_prob=0.1, seq_len=timepoints,
 #                        n_layers=1, n_head=2, d_model=32, max_len=timepoints)
@@ -124,8 +125,9 @@ b, c, timepoints = train_dataset.get_X_shape()
 #                      input_window_samples=timepoints, final_fc_length='auto', add_log_softmax=False)
 # model = ConformerCopy(seq_len=timepoints, vocab_size=timepoints,
 #                       nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5)
-model = GraphFormer(seq_len=timepoints, vocab_size=vocab_size, n_graph_features=timepoints, channels=22, K=2, nhead=2,
-                    num_classes=2, depth=2, emb_size=40, expansion=4, dropout=0.1)
+model = GraphFormer(seq_len=timepoints,   K=2, nhead=2,
+                    num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.1)
+# model = ConformerCopy(vocab_size=timepoints, nhead=2, num_classes=2,)
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=50, final_conv_length='auto')
 # model = SimpleViT()
