@@ -10,8 +10,6 @@ from torch.utils.data import DataLoader
 from torcheeg.models import SimpleViT, ATCNet, VanillaTransformer, EEGNet, ViT
 from braindecode.models import ShallowFBCSPNet, EEGConformer
 from torch.optim.lr_scheduler import LRScheduler
-from new_model import *
-from models import *
 from itertools import product
 from trainer import MultiLabelClassifierTrainer
 from EEGTransformer import EEGTransformer, EEGTransformerEmb
@@ -87,12 +85,6 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             elif model_type == 'VanillaTransformer':
                 model = VanillaTransformer(
                     chunk_size=timepoints, t_patch_size=timepoints//5, **args)
-            elif model_type == 'Transformer':
-                model = Transformer(
-                    **args, seq_len=timepoints, max_len=timepoints)
-            elif model_type == 'BasicTransformer':
-                model = BasicTransformer(
-                    **args, seq_len=timepoints)
             elif model_type == 'EEGTransformer':
                 model = EEGTransformer(
                     **args, seq_len=timepoints, vocab_size=vocab_size)

@@ -9,9 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from itertools import product
 from torch.utils.data import DataLoader, TensorDataset
-from autoencoder import Autoencoder
 # from conformer import _MultiHeadAttention, _TransformerEncoderBlock, _PositionwiseFeedforward, _TransformerEncoder, _FullyConnected, _FinalLayer, _ResidualAdd
-from models import *
 import torch
 import torch.nn as nn
 from datasets import *
@@ -27,7 +25,7 @@ from torcheeg.transforms import ToGrid
 from torcheeg.models import SimpleViT,  VanillaTransformer, EEGNet, ViT
 from braindecode.models import ShallowFBCSPNet, EEGConformer, ATCNet
 from torch.optim.lr_scheduler import LRScheduler
-from new_model import *
+
 from torchviz import make_dot
 # from conformer import *
 from einops.layers.torch import Rearrange, Reduce
