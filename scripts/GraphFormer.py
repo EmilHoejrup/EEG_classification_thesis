@@ -115,7 +115,7 @@ class _GraphConvolution(nn.Module):
         self.dropout = dropout
 
     def forward(self, x):
-        idx = torch.arange(self.channels).long()
+        idx = torch.arange(self.channels).long().to(x.device)
         A = self.graph_constructor(idx)
         A, attr = dense_to_sparse(A)
         out = self.graph_conv(x, A, attr)
