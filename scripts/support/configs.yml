@@ -1,4 +1,4 @@
-models_to_train: ["GraphFormer", "ConformerCopy"]
+models_to_train: ["GraphFormer"]
 dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
 
 train_params:
