@@ -5,29 +5,7 @@ from tqdm import tqdm
 import wandb
 from support.utils import plot_train_val_scores
 from torch.optim.lr_scheduler import LRScheduler
-
-
-class AutoencoderTrainer(nn.Module):
-    def __init__(self, model, train_loader, loss_fun, optimizer, device):
-        super().__init__()
-        self.model = model
-        self.train_loader = train_loader
-        self.loss_fun = loss_fun
-        self.optimizer = optimizer
-        self.device = device
-
-    def fit(self, epochs):
-        for _ in tqdm(range(epochs)):
-            for batch, (X, y) in enumerate(self.train_loader):
-                output = self.model(X)
-                b, c, t = X.shape
-                expected = X.view(b, -1)
-                loss = self.loss_fun(output, expected)
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-                if batch % 10 == 0:
-                    print(loss.item())
+from sklearn.metrics import precision_score, recall_score
 
 
 class MultiLabelClassifierTrainer(nn.Module):
@@ -37,7 +15,8 @@ class MultiLabelClassifierTrainer(nn.Module):
                  loss_fun: torch.nn.Module,
                  optimizer: torch.optim.Optimizer,
                  scheduler: LRScheduler,
-                 device: torch.device):
+                 device: torch.device,
+                 wandb_logging=True):
 
         super().__init__()
         self.model = model
@@ -52,7 +31,9 @@ class MultiLabelClassifierTrainer(nn.Module):
         self.val_accuracies = []
         self.scheduler = scheduler
         self.model.to(device)
-        wandb.watch(self.model, self.loss_fun, log='all')
+        self.wandb_logging = wandb_logging
+        if wandb_logging:
+            wandb.watch(self.model, self.loss_fun, log='all')
 
     def fit(self, epochs=5, print_metrics=True):
         for _ in tqdm(range(epochs)):
@@ -93,8 +74,6 @@ class MultiLabelClassifierTrainer(nn.Module):
         self.scheduler.step()
         train_loss /= len(self.train_loader)
         train_acc /= (len(self.train_loader.dataset))
-        # self.log('train loss', train_loss)
-        # self.log('train accuracy', train_acc)
 
         self.train_losses.append(train_loss)
         self.train_accuracies.append(train_acc)
@@ -102,18 +81,16 @@ class MultiLabelClassifierTrainer(nn.Module):
         if (print_metrics):
             print(
                 f"Train loss: {train_loss:.5f} | Train acc: {train_acc*100:.5f}")
-        wandb.log({"Train Loss": train_loss, "Train Accuracy": train_acc})
+        if self.wandb_logging:
+            wandb.log({"Train Loss": train_loss, "Train Accuracy": train_acc})
 
     def _val_step(self, print_metrics):
         val_loss, val_acc = 0, 0
+        val_precision, val_recall = 0, 0
         self.model.eval()
         with torch.inference_mode():
-            # for X, y in data_loader:
             for batch, (X, y) in enumerate(self.val_loader):
                 X, y = X.to(self.device), y.to(self.device)
-                # X = X.unsqueeze(dim=2)
-                # Forward pass
-                # X = torch.reshape(X, (-1, 562, 22))
                 y_logits = self.model(X)
                 val_acc += (y_logits.argmax(1) ==
                             y).type(torch.float).sum().item()
@@ -121,6 +98,11 @@ class MultiLabelClassifierTrainer(nn.Module):
                 # Calculate metrics
                 val_loss += self.loss_fun(y_logits, y)
                 # Go from logits -> prediction labels
+                y_pred = y_logits.argmax(1).cpu().numpy()
+                y_true = y.cpu().numpy()
+                val_precision += precision_score(y_true,
+                                                 y_pred, average='weighted')
+                val_recall += recall_score(y_true, y_pred, average='weighted')
 
             # Calculate test loss and accuracy average per batch
             val_loss /= len(self.val_loader)
@@ -131,5 +113,8 @@ class MultiLabelClassifierTrainer(nn.Module):
             self.val_accuracies.append(val_acc)
         if (print_metrics):
             print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc*100:.5f}")
-        wandb.log({"Validation Loss": val_loss,
-                  "Validation Accuracy": val_acc})
+        if self.wandb_logging:
+            wandb.log({"Validation Loss": val_loss,
+                       "Validation Accuracy": val_acc,
+                       "Validation Precision": val_precision,
+                       "Validation Recall": val_recall})
