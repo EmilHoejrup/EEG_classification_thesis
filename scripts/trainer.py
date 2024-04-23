@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import LRScheduler
 from sklearn.metrics import precision_score, recall_score
 
 
-class MultiLabelClassifierTrainer(nn.Module):
+class Trainer(nn.Module):
     def __init__(self, model: torch.nn.Module,
                  train_loader: torch.utils.data.DataLoader,
                  val_loader: torch.utils.data.DataLoader,
@@ -101,8 +101,9 @@ class MultiLabelClassifierTrainer(nn.Module):
                 y_pred = y_logits.argmax(1).cpu().numpy()
                 y_true = y.cpu().numpy()
                 val_precision += precision_score(y_true,
-                                                 y_pred, average='weighted')
-                val_recall += recall_score(y_true, y_pred, average='weighted')
+                                                 y_pred, average='weighted', zero_division=0)
+                val_recall += recall_score(y_true, y_pred,
+                                           average='weighted', zero_division=0)
 
             # Calculate test loss and accuracy average per batch
             val_loss /= len(self.val_loader)

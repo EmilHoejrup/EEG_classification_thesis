@@ -83,8 +83,8 @@ optimizer = torch.optim.Adam(
     params=model.parameters(), lr=LEARNING_RATE)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                        T_max=EPOCHS - 1)
-trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
-                                      val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer = Trainer(model, train_loader=train_dataloader, scheduler=scheduler,
+                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=50, print_metrics=True)
 
 trainer.plot_train_val_scores()
@@ -148,8 +148,8 @@ optimizer = torch.optim.Adam(params=model.parameters(), lr=0.0001)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                        T_max=EPOCHS - 1)
 
-trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
-                                      val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer = Trainer(model, train_loader=train_dataloader, scheduler=scheduler,
+                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=100, print_metrics=True)
 trainer.plot_train_val_scores()
 
@@ -195,8 +195,8 @@ optimizer = torch.optim.Adam(
     params=model.parameters(), lr=LEARNING_RATE)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                        T_max=EPOCHS - 1)
-trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
-                                      val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer = Trainer(model, train_loader=train_dataloader, scheduler=scheduler,
+                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=50, print_metrics=True)
 
 trainer.plot_train_val_scores()
@@ -246,8 +246,8 @@ optimizer = torch.optim.Adam(
     params=model.parameters(), lr=LEARNING_RATE)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
                                                        T_max=EPOCHS - 1)
-trainer = MultiLabelClassifierTrainer(model, train_loader=train_dataloader, scheduler=scheduler,
-                                      val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
+trainer = Trainer(model, train_loader=train_dataloader, scheduler=scheduler,
+                  val_loader=val_dataloader, loss_fun=loss_fun, optimizer=optimizer, device=device)
 trainer.fit(epochs=1, print_metrics=True)
 
 trainer.plot_train_val_scores()
