@@ -18,7 +18,7 @@ class GraphFormer(nn.Module):
         self.spatial_embedding = _SpatialEmbedding(emb_size)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
-        self.clshead = ClassificationHead(194*emb_size, num_classes)
+        self.clshead = ClassificationHead(num_classes)
 
     def forward(self, x):
         # x = torch.unsqueeze(x, dim=1)

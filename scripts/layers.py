@@ -405,18 +405,37 @@ class _GraphConvolution(nn.Module):
         return out
 
 
-class ClassificationHead(nn.Sequential):
-    def __init__(self, emb_size, n_classes):
+# class ClassificationHead(nn.Sequential):
+#     def __init__(self, emb_size, n_classes):
+#         super().__init__()
+
+#         # global average pooling
+#         self.clshead = nn.Sequential(
+#             Reduce('b n e -> b e', reduction='mean'),
+#             nn.LayerNorm(emb_size),
+#             nn.Linear(emb_size, n_classes)
+#         )
+#         self.fc = nn.Sequential(
+#             nn.Linear(emb_size, 256),
+#             nn.ELU(),
+#             nn.Dropout(0.5),
+#             nn.Linear(256, 32),
+#             nn.ELU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(32, n_classes)
+#         )
+
+#     def forward(self, x):
+#         x = x.contiguous().view(x.size(0), -1)
+#         out = self.fc(x)
+#         return out
+
+class ClassificationHead(nn.Module):
+    def __init__(self, n_classes):
         super().__init__()
 
-        # global average pooling
-        self.clshead = nn.Sequential(
-            Reduce('b n e -> b e', reduction='mean'),
-            nn.LayerNorm(emb_size),
-            nn.Linear(emb_size, n_classes)
-        )
         self.fc = nn.Sequential(
-            nn.Linear(emb_size, 256),
+            nn.Linear(0, 256),  # Placeholder for dynamic input size
             nn.ELU(),
             nn.Dropout(0.5),
             nn.Linear(256, 32),
@@ -426,6 +445,15 @@ class ClassificationHead(nn.Sequential):
         )
 
     def forward(self, x):
-        x = x.contiguous().view(x.size(0), -1)
+        # Compute the input size dynamically
+        input_size = x.size(1) * x.size(2)
+
+        # Update the first linear layer with the dynamic input size
+        self.fc[0] = nn.Linear(input_size, 256)
+
+        # Flatten the input
+        x = x.view(x.size(0), -1)
+
+        # Forward pass through the network
         out = self.fc(x)
         return out
