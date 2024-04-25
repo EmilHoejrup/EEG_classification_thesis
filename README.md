@@ -1,18 +1,12 @@
 # EEG classification with transformers
 
----
-
 The GitHub repository for my thesis **"EEG classification with transformers"** on the IT University of Copenhagen, which investigates several different approaches for harnessing the power of transformer models for EEG classification.
 
-##### Abstract
-
----
+## Abstract
 
 to be written
 
-##### Usage
-
----
+## Usage
 
 To run experiments first install the necessary packages:
 
@@ -32,9 +26,7 @@ In the configs.yml file you can also specify which dataset, model and model hype
 
 **NB:** Not all dataset and model combinations work as some models expect raw EEG data as input and some expect the EEG data to have been transformed using permutation patterns as described in the thesis.
 
-##### Dataset
-
----
+## Dataset
 
 I use the [BNCI competition IV 2b](https://www.bbci.de/competition/iv/) dataset obtained from [braindecode](https://braindecode.org/stable/index.html).
 The dataset will automatically be downloaded the first time you run `scrpits/run.py`.

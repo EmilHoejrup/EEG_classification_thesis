@@ -6,3 +6,4 @@ mlartifacts/
 wandb/
 scripts/attached
 *.ipynb
+experiment.py

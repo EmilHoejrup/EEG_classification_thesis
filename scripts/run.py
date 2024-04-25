@@ -7,7 +7,6 @@ import yaml
 from datasets import *
 from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
-from torcheeg.models import SimpleViT, ATCNet, VanillaTransformer, EEGNet, ViT
 from braindecode.models import ShallowFBCSPNet, EEGConformer
 from torch.optim.lr_scheduler import LRScheduler
 from itertools import product
@@ -83,9 +82,6 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             args = dict(zip(param_keys, combination))
             if model_type == 'EEGConformer':
                 model = EEGConformer(**args, n_times=timepoints)
-            elif model_type == 'VanillaTransformer':
-                model = VanillaTransformer(
-                    chunk_size=timepoints, t_patch_size=timepoints//5, **args)
             elif model_type == 'EEGTransformer':
                 model = EEGTransformer(
                     **args, seq_len=timepoints, vocab_size=vocab_size)
@@ -106,7 +102,7 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
 def train(model, train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs):
 
     if configs['train_params']['wandb_logging']:
-        with wandb.init(project='EEG-Transformers 11.0 Graphformer + ConformerCopy'):
+        with wandb.init(project=configs['train_params']['project_name']):
             if dataset_combination:
                 configs.update({'model': model.__class__.__name__,
                                 'window_size': dataset_combination[0], 'stride': dataset_combination[1], 'dataset_strategy': dataset_combination[2], 'sequence length': timepoints})
