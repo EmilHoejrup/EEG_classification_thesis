@@ -96,7 +96,7 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
                     **args, seq_len=timepoints)
             elif model_type == 'EEGTransformerFlatten':
                 model = EEGTransformerFlatten(
-                    **args, emb_size=vocab_size)
+                    **args, vocab_size=vocab_size)
 
             train(model, train_dataloader,
                   val_dataloader, timepoints, dataset_combination, configs=configs)

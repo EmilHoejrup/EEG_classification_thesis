@@ -7,16 +7,19 @@ from einops.layers.torch import Rearrange, Reduce
 import math
 
 
+from layers import _PositionalEncoding, _TransformerEncoder, ClassificationHead
+
+
 class EEGTransformerFlatten(nn.Module):
-    def __init__(self, emb_size, nhead=2, num_classes=2, expansion=4, dropout=0.5):
+    def __init__(self, vocab_size, emb_size, nhead=2, num_classes=2, expansion=4, dropout=0.5):
         super(EEGTransformerFlatten, self).__init__()
         # self.transformer_encoder = _TransformerEncoder(
         #     depth, emb_size, nhead, expansion, dropout)
         self.transformer_encoder = nn.TransformerEncoderLayer(
             d_model=emb_size, nhead=nhead, dim_feedforward=expansion*emb_size, dropout=dropout, batch_first=True)
         self.clshead = _ClassificationHead(emb_size, n_classes=num_classes)
-        self.positional_encoding = _PositionalEncoding(emb_size)
-        self.embedding = nn.Embedding(emb_size, emb_size)
+        self.positional_encoding = _PositionalEncoding(vocab_size)
+        self.embedding = nn.Embedding(vocab_size, emb_size)
         self.flatten = nn.Flatten()
 
     def forward(self, x):
@@ -30,6 +33,21 @@ class EEGTransformerFlatten(nn.Module):
         # print(x.shape)
         out = self.clshead(x)
         return out
+
+
+class _ClassificationHead(nn.Module):
+    def __init__(self, emb_size, n_classes):
+        super(_ClassificationHead, self).__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(emb_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, n_classes)
+        )
+
+    def forward(self, x):
+        x = x.mean(dim=1)
+        x = self.fc(x)
+        return x
 
 
 class _ClassificationHead(nn.Module):
