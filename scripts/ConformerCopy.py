@@ -7,6 +7,7 @@ from einops.layers.torch import Rearrange, Reduce
 import math
 from layers import _PositionalEncoding, _TransformerEncoder, ClassificationHead, _SpatialEmbedding
 
+
 class EEGTransformer(nn.Module):
     def __init__(self, seq_len, vocab_size, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
         super(EEGTransformer, self).__init__()
@@ -32,7 +33,7 @@ class ConformerCopy(nn.Module):
         super(ConformerCopy, self).__init__()
         # self.embedding = nn.Embedding(vocab_size, emb_size)
         self.spatial_conv = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
-        self.spatial_embedding = _SpatialEmbedding(emb_size, vocab_size)
+        self.spatial_embedding = _SpatialEmbedding(emb_size)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
         self.clshead = ClassificationHead(194*emb_size, num_classes)
@@ -61,7 +62,7 @@ class EEGTransformerEmb(nn.Module):
         super(EEGTransformerEmb, self).__init__()
         self.embedding = nn.Embedding(vocab_size, emb_size)
         self.spatial_conv = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
-        self.spatial_embedding = _SpatialEmbedding(emb_size, vocab_size)
+        self.spatial_embedding = _SpatialEmbedding(emb_size)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
         self.clshead = ClassificationHead(seq_len*emb_size, num_classes)
