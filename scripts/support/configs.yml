@@ -1,5 +1,5 @@
-models_to_train: ["EEGTransformer"]
-dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
+models_to_train: ["EEGTransformerFlatten"]
+dataset: "BNCI_LEFT_RIGHT"
 
 train_params:
   epochs: 900
@@ -24,6 +24,11 @@ models:
     n_channels: [22]
     n_classes: [2]
     drop_prob: [0.5, 0.8]
+  EEGTransformerFlatten:
+    nhead: [2]
+    num_classes: [2]
+    expansion: [4]
+    dropout: [0.7]
   EEGTransformer:
     nhead: [2]
     num_classes: [2]

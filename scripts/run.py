@@ -11,7 +11,7 @@ from braindecode.models import ShallowFBCSPNet, EEGConformer
 from torch.optim.lr_scheduler import LRScheduler
 from itertools import product
 from trainer import Trainer
-from EEGTransformer import EEGTransformer, EEGTransformerEmb
+from EEGTransformer import EEGTransformer, EEGTransformerEmb, EEGTransformerFlatten
 from ConformerCopy import ConformerCopy
 from GraphFormer import GraphFormer
 
@@ -94,6 +94,9 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             elif model_type == 'GraphFormer':
                 model = GraphFormer(
                     **args, seq_len=timepoints)
+            elif model_type == 'EEGTransformerFlatten':
+                model = EEGTransformerFlatten(
+                    **args, emb_size=vocab_size)
 
             train(model, train_dataloader,
                   val_dataloader, timepoints, dataset_combination, configs=configs)

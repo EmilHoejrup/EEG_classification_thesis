@@ -7,6 +7,46 @@ from einops.layers.torch import Rearrange, Reduce
 import math
 
 
+class EEGTransformerFlatten(nn.Module):
+    def __init__(self, emb_size, nhead=2, num_classes=2, expansion=4, dropout=0.5):
+        super(EEGTransformerFlatten, self).__init__()
+        # self.transformer_encoder = _TransformerEncoder(
+        #     depth, emb_size, nhead, expansion, dropout)
+        self.transformer_encoder = nn.TransformerEncoderLayer(
+            d_model=emb_size, nhead=nhead, dim_feedforward=expansion*emb_size, dropout=dropout, batch_first=True)
+        self.clshead = _ClassificationHead(emb_size, n_classes=num_classes)
+        self.positional_encoding = _PositionalEncoding(emb_size)
+        self.embedding = nn.Embedding(emb_size, emb_size)
+        self.flatten = nn.Flatten()
+
+    def forward(self, x):
+        x = self.flatten(x)
+        # print(x.shape)
+        x = self.embedding(x)
+        # print(x.shape)
+        # x = rearrange(x, 'b c t -> b t c')
+        # print(x.shape)
+        x = self.transformer_encoder(x)
+        # print(x.shape)
+        out = self.clshead(x)
+        return out
+
+
+class _ClassificationHead(nn.Module):
+    def __init__(self, emb_size, n_classes):
+        super(_ClassificationHead, self).__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(emb_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, n_classes)
+        )
+
+    def forward(self, x):
+        x = x.mean(dim=1)
+        x = self.fc(x)
+        return x
+
+
 class EEGTransformer(nn.Module):
     def __init__(self, seq_len, vocab_size, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
         super(EEGTransformer, self).__init__()
