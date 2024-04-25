@@ -405,37 +405,18 @@ class _GraphConvolution(nn.Module):
         return out
 
 
-# class ClassificationHead(nn.Sequential):
-#     def __init__(self, emb_size, n_classes):
-#         super().__init__()
-
-#         # global average pooling
-#         self.clshead = nn.Sequential(
-#             Reduce('b n e -> b e', reduction='mean'),
-#             nn.LayerNorm(emb_size),
-#             nn.Linear(emb_size, n_classes)
-#         )
-#         self.fc = nn.Sequential(
-#             nn.Linear(emb_size, 256),
-#             nn.ELU(),
-#             nn.Dropout(0.5),
-#             nn.Linear(256, 32),
-#             nn.ELU(),
-#             nn.Dropout(0.3),
-#             nn.Linear(32, n_classes)
-#         )
-
-#     def forward(self, x):
-#         x = x.contiguous().view(x.size(0), -1)
-#         out = self.fc(x)
-#         return out
-
-class ClassificationHead(nn.Module):
-    def __init__(self, n_classes):
+class ClassificationHead(nn.Sequential):
+    def __init__(self, emb_size, n_classes):
         super().__init__()
 
+        # global average pooling
+        self.clshead = nn.Sequential(
+            Reduce('b n e -> b e', reduction='mean'),
+            nn.LayerNorm(emb_size),
+            nn.Linear(emb_size, n_classes)
+        )
         self.fc = nn.Sequential(
-            nn.Linear(0, 256),  # Placeholder for dynamic input size
+            nn.Linear(emb_size, 256),
             nn.ELU(),
             nn.Dropout(0.5),
             nn.Linear(256, 32),
@@ -445,15 +426,59 @@ class ClassificationHead(nn.Module):
         )
 
     def forward(self, x):
-        # Compute the input size dynamically
-        input_size = x.size(1) * x.size(2)
-
-        # Update the first linear layer with the dynamic input size
-        self.fc[0] = nn.Linear(input_size, 256)
-
-        # Flatten the input
-        x = x.view(x.size(0), -1)
-
-        # Forward pass through the network
+        x = x.contiguous().view(x.size(0), -1)
         out = self.fc(x)
         return out
+
+# class ClassificationHead(nn.Module):
+#     """
+#     A classification head module that takes an input tensor and produces
+#     class predictions.
+
+#     Args:
+#         n_classes (int): The number of output classes.
+
+#     Attributes:
+#         fc (nn.Sequential): The fully connected layers of the classification head.
+
+#     Methods:
+#         forward(x): Performs a forward pass through the network.
+
+#     """
+
+#     def __init__(self, n_classes):
+#         super().__init__()
+
+#         self.fc = nn.Sequential(
+#             nn.Linear(0, 256),  # Placeholder for dynamic input size
+#             nn.ELU(),
+#             nn.Dropout(0.5),
+#             nn.Linear(256, 32),
+#             nn.ELU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(32, n_classes)
+#         )
+
+#     def forward(self, x):
+#         """
+#         Performs a forward pass through the network.
+
+#         Args:
+#             x (torch.Tensor): The input tensor.
+
+#         Returns:
+#             torch.Tensor: The output tensor containing class predictions.
+
+#         """
+#         # Compute the input size dynamically
+#         input_size = x.size(1) * x.size(2)
+
+#         # Update the first linear layer with the dynamic input size
+#         self.fc[0] = nn.Linear(input_size, 256)
+
+#         # Flatten the input
+#         x = x.view(x.size(0), -1)
+
+#         # Forward pass through the network
+#         out = self.fc(x)
+#         return out
