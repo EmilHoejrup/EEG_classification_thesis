@@ -1,6 +1,5 @@
-models_to_train:
-  ["GraphFormer", "ConformerCopy", "EEGTransformerEmb", "EEGTransformer"]
-dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
+models_to_train: ["EEGTransformer"]
+dataset: "BNCI_LEFT_RIGHT"
 
 train_params:
   epochs: 900
@@ -56,8 +55,8 @@ models:
     K: [2, 3, 5, 7]
 datasets:
   BNCI_LEFT_RIGHT:
-    window_size: [6, 8, 11]
-    stride: [1, 2, 7, 9, 11]
+    window_size: [8, 11]
+    stride: [1, 9, 11]
     strategy: ["permute"]
   BNCI_LEFT_RIGHT_CONTINUOUS:
   BNCI_LEFT_RIGHT_COMPRESSED:
