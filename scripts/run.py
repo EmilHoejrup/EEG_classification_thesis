@@ -93,7 +93,7 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
                     **args, vocab_size=vocab_size)
             elif model_type == 'GraphFormer':
                 model = GraphFormer(
-                    **args, seq_len=timepoints, K=2)
+                    **args, seq_len=timepoints)
 
             train(model, train_dataloader,
                   val_dataloader, timepoints, dataset_combination, configs=configs)
