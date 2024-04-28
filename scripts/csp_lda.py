@@ -1,41 +1,14 @@
 # %%
-from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
-import gzip
 import numpy as np
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.model_selection import ShuffleSplit, cross_val_score
 from sklearn.pipeline import Pipeline
 import mne
 from mne.decoding import CSP
-import torch
-import pickle as p
-import yaml
 from support.constants import DATA_DIR, BNCI_CHANNELS, BNCI_SFREQ
 from datasets import read_X_and_y
 from mne.decoding import CSP
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from sklearn.pipeline import make_pipeline
-import moabb
-from moabb.evaluations import WithinSessionEvaluation, CrossSessionEvaluation
-from moabb.paradigms import LeftRightImagery
-import seaborn as sns
-import matplotlib as plt
-# mne.set_log_level(verbose='WARNING')
-# HIM_OR_HER = DATA_DIR / 'Processed' / 'him-or-her'
-# X_FILE = HIM_OR_HER / 'X.npy.gz'
-# Y_FILE = HIM_OR_HER / 'Y.p'
-# with open(HIM_OR_HER / 'prep_configs.yaml', 'r') as f:
-#     prep_configs = yaml.safe_load(f)
-
-
-# def read_X_and_y(x_file, y_file):
-#     with gzip.GzipFile(x_file, "r") as f:
-#         X = torch.from_numpy(np.load(file=f))
-
-#     with open(y_file, 'rb') as f:
-#         Y = p.load(f)
-#     return X, Y
 
 BNCI = DATA_DIR / 'BNCI2014_001'
 X_FILE = BNCI / 'X.npy.gz'
@@ -54,7 +27,7 @@ def x_to_epochs(X):
     return epochs
 
 
-# The following part taken from this MNE tutorial:https://mne.tools/stable/auto_examples/decoding/decoding_csp_eeg.html
+# The following part is taken from this MNE tutorial:https://mne.tools/stable/auto_examples/decoding/decoding_csp_eeg.html
 def train(epochs_array, labels):
     epochs_train = epochs_array.copy()
     scores = []

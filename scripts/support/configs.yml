@@ -8,7 +8,7 @@ train_params:
   classes: 2
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Flatten 1.0 new PE"
+  project_name: "Flatten 2.0 new PE"
 
 models:
   EEGConformer:
@@ -28,8 +28,8 @@ models:
     nhead: [2]
     num_classes: [2]
     expansion: [4]
-    dropout: [0.7]
-    emb_size: [10]
+    dropout: [0.5]
+    emb_size: [10, 20]
   EEGTransformer:
     nhead: [2]
     num_classes: [2]
@@ -70,6 +70,6 @@ datasets:
     stride: [9, 11]
     strategy: [None]
   BNCI_LEFT_RIGHT_NEW_PE:
-    window_size: [4, 5, 6, 7, 8, 9]
-    stride: [6, 7, 8, 9, 10, 11]
+    window_size: [7, 8]
+    stride: [10, 11]
     strategy: [None]

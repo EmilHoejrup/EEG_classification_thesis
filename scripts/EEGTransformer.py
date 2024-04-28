@@ -50,21 +50,6 @@ class _ClassificationHead(nn.Module):
         return x
 
 
-class _ClassificationHead(nn.Module):
-    def __init__(self, emb_size, n_classes):
-        super(_ClassificationHead, self).__init__()
-        self.fc = nn.Sequential(
-            nn.Linear(emb_size, 128),
-            nn.ReLU(),
-            nn.Linear(128, n_classes)
-        )
-
-    def forward(self, x):
-        x = x.mean(dim=1)
-        x = self.fc(x)
-        return x
-
-
 class EEGTransformer(nn.Module):
     def __init__(self, seq_len, vocab_size, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
         super(EEGTransformer, self).__init__()
