@@ -1,5 +1,5 @@
 models_to_train: ["EEGTransformerFlatten"]
-dataset: "BNCI_LEFT_RIGHT"
+dataset: "BNCI_LEFT_RIGHT_NEW_PE"
 
 train_params:
   epochs: 900
@@ -8,7 +8,7 @@ train_params:
   classes: 2
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Flatten 0.0"
+  project_name: "Flatten 1.0 new PE"
 
 models:
   EEGConformer:
@@ -29,7 +29,7 @@ models:
     num_classes: [2]
     expansion: [4]
     dropout: [0.7]
-    emb_size: [10, 22, 44]
+    emb_size: [10]
   EEGTransformer:
     nhead: [2]
     num_classes: [2]
@@ -70,6 +70,6 @@ datasets:
     stride: [9, 11]
     strategy: [None]
   BNCI_LEFT_RIGHT_NEW_PE:
-    window_size: [5, 6, 7, 9, 10]
-    stride: [1, 2, 5, 9, 10]
+    window_size: [4, 5, 6, 7, 8, 9]
+    stride: [6, 7, 8, 9, 10, 11]
     strategy: [None]
