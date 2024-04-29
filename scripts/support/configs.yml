@@ -1,19 +1,19 @@
 models_to_train: [
-    "EEGTransformerFlatten",
+    # "EEGTransformerFlatten",
+    "EEGConformer",
     # "EEGTransformer",
     # "EEGTransformerEmb",
     # "ConformerCopy",
-    # "GraphFormer",
+    "GraphFormer",
   ]
-dataset_list: [
-    # "BCI_2A_CONTINUOUS",
-    # "BCI_2B_CONTINUOUS",
-    # "BCI_2B_PERMUTED",
-    # "BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2B_PERMUTED",
-  ]
+dataset_list: []
 
+# "BCI_2A_CONTINUOUS",
+# "BCI_2B_CONTINUOUS",
+# "BCI_2B_PERMUTED",
+# "BCI_2A_PERMUTED",
+# "SIMPLE_BCI_2A_PERMUTED",
+# "SIMPLE_BCI_2B_PERMUTED",
 train_params:
   epochs: 900
   batch_size: 32
@@ -57,7 +57,7 @@ models:
     emb_size: [20]
     expansion: [4]
     dropout: [0.5, 0.8]
-    K: [2, 3, 5, 7]
+    K: [2, 7]
 datasets:
   BCI_2A_CONTINUOUS:
   BCI_2B_CONTINUOUS:
