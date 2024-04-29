@@ -6,14 +6,15 @@ models_to_train: [
     # "ConformerCopy",
     "GraphFormer",
   ]
-dataset_list: []
+dataset_list: [
 
-# "BCI_2A_CONTINUOUS",
-# "BCI_2B_CONTINUOUS",
+  "BCI_2A_CONTINUOUS",
+  "BCI_2B_CONTINUOUS",
 # "BCI_2B_PERMUTED",
 # "BCI_2A_PERMUTED",
 # "SIMPLE_BCI_2A_PERMUTED",
 # "SIMPLE_BCI_2B_PERMUTED",
+]
 train_params:
   epochs: 900
   batch_size: 32
