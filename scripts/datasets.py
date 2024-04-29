@@ -19,9 +19,9 @@ from braindecode.datautil import load_concat_dataset
 
 X_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'X.npy.gz'
 Y_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'Y.p'
-BNCI2014_001_DIR = DATA_DIR / 'BNCI2014_001'
-X_BNCI2014_001 = BNCI2014_001_DIR / 'X.npy.gz'
-Y_BNCI2014_001 = BNCI2014_001_DIR / 'Y.p'
+BCI_IV_2B_DIR = DATA_DIR / 'BCI_IV_2B'
+X_BCI_IV_2B = BCI_IV_2B_DIR / 'X.npy.gz'
+Y_BCI_IV_2B = BCI_IV_2B_DIR / 'Y.p'
 BCI_IV_2A_DIR = DATA_DIR / 'BCI_IV_2A'
 X_BCI_IV_2A = BCI_IV_2A_DIR / 'X.npy.gz'
 Y_BCI_IV_2A = BCI_IV_2A_DIR / 'Y.p'
@@ -41,10 +41,10 @@ def fetch_data(data_dir):
         if not BCI_IV_2A_DIR.exists():
             fetch_BCI_IV_2A()
         X, Y = read_X_and_y(X_BCI_IV_2A, Y_BCI_IV_2A)
-    elif data_dir == BNCI2014_001_DIR:
-        if not BNCI2014_001_DIR.exists():
+    elif data_dir == BCI_IV_2B_DIR:
+        if not BCI_IV_2B_DIR.exists():
             fetch_BNCI2014_001()
-        X, Y = read_X_and_y(X_BNCI2014_001, Y_BNCI2014_001)
+        X, Y = read_X_and_y(X_BCI_IV_2B, Y_BCI_IV_2B)
     return X, Y
 
 
@@ -163,12 +163,12 @@ class PERMUTATION_DATASET(Dataset):
             return self.X_val[index], self.Y_val[index]
 
 
-class BCI_IV_2A_PERMUTED(PERMUTATION_DATASET):
+class BCI_2A_PERMUTED(PERMUTATION_DATASET):
     def __init__(self, window_size, stride, train=True, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2A_DIR, train, threshold)
 
 
-class BCI_IV_2B_PERMUTED(PERMUTATION_DATASET):
+class BCI_2B_PERMUTED(PERMUTATION_DATASET):
     def __init__(self, window_size, stride, train=True, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2B_DIR, train, threshold)
 
@@ -245,11 +245,11 @@ class SIMPLE_PERMUTATION_DATASET(Dataset):
             return self.X_val[index], self.Y_val[index]
 
 
-class SIMPLE_BCI_IV_2A_PERMUTED(SIMPLE_PERMUTATION_DATASET):
+class SIMPLE_BCI_2A_PERMUTED(SIMPLE_PERMUTATION_DATASET):
     def __init__(self, window_size, stride, train=True, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2A_DIR, train, threshold)
 
 
-class SIMPLE_BCI_IV_2B_PERMUTED(SIMPLE_PERMUTATION_DATASET):
+class SIMPLE_BCI_2B_PERMUTED(SIMPLE_PERMUTATION_DATASET):
     def __init__(self, window_size, stride, train=True, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2B_DIR, train, threshold)

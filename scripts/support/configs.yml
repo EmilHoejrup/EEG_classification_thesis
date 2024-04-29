@@ -1,5 +1,18 @@
-models_to_train: ["EEGTransformerFlatten"]
-dataset: "BNCI_LEFT_RIGHT_NEW_PE"
+models_to_train: [
+    "EEGTransformerFlatten",
+    # "EEGTransformer",
+    # "EEGTransformerEmb",
+    # "ConformerCopy",
+    # "GraphFormer",
+  ]
+dataset_list: [
+    # "BCI_2A_CONTINUOUS",
+    # "BCI_2B_CONTINUOUS",
+    # "BCI_2B_PERMUTED",
+    # "BCI_2A_PERMUTED",
+    "SIMPLE_BCI_2A_PERMUTED",
+    "SIMPLE_BCI_2B_PERMUTED",
+  ]
 
 train_params:
   epochs: 900
@@ -8,68 +21,55 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "dataset 2a 0.0"
+  project_name: "dataset 2a 1.0"
 
 models:
   EEGConformer:
-    n_outputs: [4]
     n_chans: [22]
     add_log_softmax: [False]
     final_fc_length: ["auto"]
-  Transformer:
-    d_model: [100]
-    n_head: [2]
-    ffn_hidden: [128]
-    n_layers: [2]
-    n_channels: [22]
-    n_classes: [2]
-    drop_prob: [0.5, 0.8]
   EEGTransformerFlatten:
     nhead: [2]
-    num_classes: [4]
     expansion: [4]
     dropout: [0.5]
     emb_size: [10]
   EEGTransformer:
     nhead: [2]
-    num_classes: [2]
     depth: [2]
     emb_size: [22]
     expansion: [4]
     dropout: [0.7]
   EEGTransformerEmb:
     nhead: [2]
-    num_classes: [2]
     depth: [2]
     emb_size: [20]
     expansion: [4]
     dropout: [0.7]
   ConformerCopy:
     nhead: [2]
-    num_classes: [2]
     depth: [2]
     emb_size: [20]
     expansion: [4]
     dropout: [0.7]
   GraphFormer:
     nhead: [2]
-    num_classes: [2]
     depth: [2]
     emb_size: [20]
     expansion: [4]
     dropout: [0.5, 0.8]
     K: [2, 3, 5, 7]
 datasets:
-  BNCI_LEFT_RIGHT:
+  BCI_2A_CONTINUOUS:
+  BCI_2B_CONTINUOUS:
+  BCI_2A_PERMUTED:
+    window_size: [2]
+    stride: [1]
+  BCI_2B_PERMUTED:
+    window_size: [2]
+    stride: [1]
+  SIMPLE_BCI_2A_PERMUTED:
     window_size: [7]
     stride: [11]
-    strategy: ["permute"]
-  BNCI_LEFT_RIGHT_CONTINUOUS:
-  BNCI_LEFT_RIGHT_COMPRESSED:
-    window_size: [6, 9, 11]
-    stride: [9, 11]
-    strategy: [None]
-  BNCI_LEFT_RIGHT_NEW_PE:
-    window_size: [8]
-    stride: [10]
-    strategy: [None]
+  SIMPLE_BCI_2B_PERMUTED:
+    window_size: [7]
+    stride: [11]
