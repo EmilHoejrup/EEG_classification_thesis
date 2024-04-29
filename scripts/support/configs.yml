@@ -1,5 +1,5 @@
 models_to_train: ["EEGTransformerFlatten"]
-dataset: "BNCI_LEFT_RIGHT"
+dataset: "BNCI_LEFT_RIGHT_NEW_PE"
 
 train_params:
   epochs: 900
