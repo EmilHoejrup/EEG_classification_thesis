@@ -8,7 +8,7 @@ train_params:
   classes: 2
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Flatten 3.0 LR"
+  project_name: "Brainlab 2.0"
 
 models:
   EEGConformer:
@@ -29,7 +29,7 @@ models:
     num_classes: [2]
     expansion: [4]
     dropout: [0.5]
-    emb_size: [10, 20]
+    emb_size: [10]
   EEGTransformer:
     nhead: [2]
     num_classes: [2]
@@ -61,7 +61,7 @@ models:
     K: [2, 3, 5, 7]
 datasets:
   BNCI_LEFT_RIGHT:
-    window_size: [7, 8, 11]
+    window_size: [7]
     stride: [11]
     strategy: ["permute"]
   BNCI_LEFT_RIGHT_CONTINUOUS:
@@ -70,6 +70,6 @@ datasets:
     stride: [9, 11]
     strategy: [None]
   BNCI_LEFT_RIGHT_NEW_PE:
-    window_size: [7, 8]
-    stride: [10, 11]
+    window_size: [8]
+    stride: [10]
     strategy: [None]

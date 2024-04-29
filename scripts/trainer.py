@@ -89,6 +89,7 @@ class Trainer(nn.Module):
         val_precision, val_recall = 0, 0
         self.model.eval()
         with torch.inference_mode():
+            y_true, y_pred = [], []
             for batch, (X, y) in enumerate(self.val_loader):
                 X, y = X.to(self.device), y.to(self.device)
                 y_logits = self.model(X)
@@ -98,12 +99,8 @@ class Trainer(nn.Module):
                 # Calculate metrics
                 val_loss += self.loss_fun(y_logits, y)
                 # Go from logits -> prediction labels
-                y_pred = y_logits.argmax(1).cpu().numpy()
-                y_true = y.cpu().numpy()
-                val_precision += precision_score(y_true,
-                                                 y_pred, average='weighted', zero_division=0)
-                val_recall += recall_score(y_true, y_pred,
-                                           average='weighted', zero_division=0)
+                y_pred.extend(y_logits.argmax(1).cpu().numpy())
+                y_true.extend(y.cpu().numpy())
 
             # Calculate test loss and accuracy average per batch
             val_loss /= len(self.val_loader)
@@ -112,10 +109,21 @@ class Trainer(nn.Module):
             # self.log('validation accuracy', val_acc)
             self.val_losses.append(val_loss)
             self.val_accuracies.append(val_acc)
+
+        val_precision = precision_score(y_true,
+                                        y_pred, average='binary', zero_division=0)
+        val_recall = recall_score(y_true, y_pred, average='binary',
+                                  zero_division=0)
         if (print_metrics):
             print(f"Val   loss: {val_loss:.5f} | Val   acc: {val_acc*100:.5f}")
+            print(
+                f"Val Precision: {val_precision:.5f} | Val Recall: {val_recall:.5f}")
+            print(f"y_true: {y_true}")
+            print(f"y_pred: {y_pred}")
+
         if self.wandb_logging:
             wandb.log({"Validation Loss": val_loss,
                        "Validation Accuracy": val_acc,
                        "Validation Precision": val_precision,
-                       "Validation Recall": val_recall})
+                       "Validation Recall": val_recall,
+                       "conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_true, preds=y_pred)})
