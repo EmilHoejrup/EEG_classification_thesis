@@ -1,18 +1,18 @@
-models_to_train: ["EEGTransformerFlatten"]
-dataset: "BNCI_LEFT_RIGHT"
+models_to_train: ["EEGConformer"]
+dataset: "BNCI_LEFT_RIGHT_CONTINUOUS"
 
 train_params:
   epochs: 900
   batch_size: 32
   lr: 0.0001
-  classes: 2
+  classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Brainlab 2.0"
+  project_name: "dataset 2a 0.0"
 
 models:
   EEGConformer:
-    n_outputs: [2]
+    n_outputs: [4]
     n_chans: [22]
     add_log_softmax: [False]
     final_fc_length: ["auto"]

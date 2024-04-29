@@ -124,7 +124,7 @@ b, c, timepoints = train_dataset.get_X_shape()
 # model = ConformerCopy(seq_len=timepoints, vocab_size=timepoints,
 #                       nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5)
 model = GraphFormer(seq_len=timepoints,   K=2, nhead=2,
-                    num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.1)
+                    num_classes=4, depth=2, emb_size=20, expansion=4, dropout=0.1)
 # model = ConformerCopy(vocab_size=timepoints, nhead=2, num_classes=2,)
 # model = ShallowFBCSPNet(n_chans=22, n_classes=2,
 #                         input_window_samples=50, final_conv_length='auto')
