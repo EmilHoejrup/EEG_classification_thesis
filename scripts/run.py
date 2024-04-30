@@ -49,11 +49,14 @@ def run():
             param_combinations = product(*dataset_params.values())
             for combination in param_combinations:
                 train_dataset = dataset(*combination, train=True)
-                val_dataset = dataset(*combination, train=False)
+                val_dataset = dataset(*combination, train=False, val=True)
+                test_dataset = dataset(*combination, train=False, val=False)
                 train_dataloader = DataLoader(
                     dataset=train_dataset, batch_size=train_params['batch_size'], shuffle=True)
                 val_dataloader = DataLoader(
                     dataset=val_dataset, batch_size=train_params['batch_size'], shuffle=True)
+                test_dataloader = DataLoader(
+                    dataset=test_dataset, batch_size=train_params['batch_size'], shuffle=True)
                 _, _, timepoints = train_dataset.get_X_shape()
                 vocab_size = train_dataset.get_vocab_size()
                 train_models(train_dataloader, val_dataloader, test_dataloader,

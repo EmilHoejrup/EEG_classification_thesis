@@ -103,7 +103,7 @@ class BCI_2B_CONTINUOUS(CONTINUOUS_DATASET):
 
 
 class PERMUTATION_DATASET(Dataset):
-    def __init__(self, window_size, stride, data_dir, train=True, threshold=0.001, ):
+    def __init__(self, window_size, stride, data_dir, train=True, val=False, val_ratio=0.2, test_ratio=0.1, threshold=0.001, random_state=42):
         self.X, self.Y = fetch_data(data_dir)
 
         self.train = train
@@ -116,14 +116,21 @@ class PERMUTATION_DATASET(Dataset):
 
         self.X = F.max_pool1d(self.X, 3, 3)
 
+        # Splitting into train, validation, and test sets
+        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
+            self.X, self.Y, test_size=test_ratio, random_state=random_state)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X, self.Y, test_size=0.2, random_state=43)
+            self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
+
         if self.train:
             self.X_train = self._discretize(self.X_train)
             # self.X_train = self.X_train.to(torch.float32)
-        else:
+        elif self.val:
             self.X_val = self._discretize(self.X_val)
             # self.X_val = self.X_val.to(torch.float32)
+        else:
+            self.X_test = self._discretize(self.X_test)
+            # self.X_test = self.X_test.to(torch.float32)
 
     def get_X_shape(self):
         return self.X_train.shape
@@ -166,44 +173,56 @@ class PERMUTATION_DATASET(Dataset):
     def __len__(self):
         if self.train:
             return len(self.X_train)
-        else:
+        elif self.val:
             return len(self.X_val)
+        else:
+            return len(self.X_test)
 
     def __getitem__(self, index):
         if self.train:
             return self.X_train[index], self.Y_train[index]
-        else:
+        elif self.val:
             return self.X_val[index], self.Y_val[index]
+        else:
+            return self.X_test[index], self.Y_test[index]
 
 
 class BCI_2A_PERMUTED(PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, threshold=0.001, ):
+    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2A_DIR, train, threshold)
 
 
 class BCI_2B_PERMUTED(PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, threshold=0.001, ):
+    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2B_DIR, train, threshold)
 
 
 class SIMPLE_PERMUTATION_DATASET(Dataset):
-    def __init__(self, window_size, stride, data_dir, train=True, threshold=0.001, ):
+    def __init__(self, window_size, stride, data_dir, train=True, val=False, val_ratio=0.2, test_ratio=0.1, threshold=0.001, random_state=42):
         self.X, self.Y = fetch_data(data_dir)
         self.train = train
+        self.val = val
         self.window_size = window_size
         self.stride = stride
         self.threshold = threshold
 
         self.X = F.max_pool1d(self.X, 3, 3)
 
+        # Splitting into train, validation, and test sets
+        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
+            self.X, self.Y, test_size=test_ratio, random_state=random_state)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X, self.Y, test_size=0.2, random_state=43)
+            self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
+
         if self.train:
             self.X_train = self._discretize(self.X_train)
             # self.X_train = self.X_train.to(torch.float32)
-        else:
+        elif self.val:
             self.X_val = self._discretize(self.X_val)
             # self.X_val = self.X_val.to(torch.float32)
+        else:
+            self.X_test = self._discretize(self.X_test)
+            # self.X_test = self.X_test.to(torch.float32)
 
     def get_X_shape(self):
         return self.X_train.shape
@@ -248,21 +267,25 @@ class SIMPLE_PERMUTATION_DATASET(Dataset):
     def __len__(self):
         if self.train:
             return len(self.X_train)
-        else:
+        elif self.val:
             return len(self.X_val)
+        else:
+            return len(self.X_test)
 
     def __getitem__(self, index):
         if self.train:
             return self.X_train[index], self.Y_train[index]
-        else:
+        elif self.val:
             return self.X_val[index], self.Y_val[index]
+        else:
+            return self.X_test[index], self.Y_test[index]
 
 
 class SIMPLE_BCI_2A_PERMUTED(SIMPLE_PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, threshold=0.001, ):
+    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2A_DIR, train, threshold)
 
 
 class SIMPLE_BCI_2B_PERMUTED(SIMPLE_PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, threshold=0.001, ):
+    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
         super().__init__(window_size, stride, BCI_IV_2B_DIR, train, threshold)
