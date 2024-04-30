@@ -206,7 +206,7 @@ class SIMPLE_PERMUTATION_DATASET(Dataset):
         self.stride = stride
         self.threshold = threshold
 
-        self.X = F.max_pool1d(self.X, 3, 3)
+        # self.X = F.max_pool1d(self.X, 3, 3)
 
         # Splitting into train, validation, and test sets
         self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
