@@ -49,9 +49,8 @@ def fetch_data(data_dir):
 
 
 class CONTINUOUS_DATASET(Dataset):
-    def __init__(self, data_dir, train=True):
+    def __init__(self, data_dir, train=True, val=False, val_ratio=0.2, test_ratio=0.1, random_state=42):
         self.X, self.Y = fetch_data(data_dir)
-        self.train = train
 
         self.X = self.X.to(torch.float32)
         _, _, timepoints = self.X.shape
@@ -60,32 +59,46 @@ class CONTINUOUS_DATASET(Dataset):
         baseline_mean = torch.mean(
             self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
         self.X = self.X - baseline_mean
+
+        # Splitting into train, validation, and test sets
+        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
+            self.X, self.Y, test_size=test_ratio, random_state=random_state)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X, self.Y, test_size=0.2, random_state=42)
+            self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
+
+        self.train = train
+        self.val = val
 
     def get_X_shape(self):
-        return self.X_train.shape
+        if self.train:
+            return self.X_train.shape
+        else:
+            return self.X_val.shape if self.val else self.X_test.shape
 
     def __len__(self):
         if self.train:
             return len(self.X_train)
-        else:
+        elif self.val:
             return len(self.X_val)
+        else:
+            return len(self.X_test)
 
     def __getitem__(self, index):
         if self.train:
             return self.X_train[index], self.Y_train[index]
-        else:
+        elif self.val:
             return self.X_val[index], self.Y_val[index]
+        else:
+            return self.X_test[index], self.Y_test[index]
 
 
 class BCI_2A_CONTINUOUS(CONTINUOUS_DATASET):
-    def __init__(self, train=True):
+    def __init__(self, train=True, val=False):
         super().__init__(BCI_IV_2A_DIR, train)
 
 
 class BCI_2B_CONTINUOUS(CONTINUOUS_DATASET):
-    def __init__(self, train=True):
+    def __init__(self, train=True, val=False):
         super().__init__(BCI_IV_2B_DIR, train)
 
 

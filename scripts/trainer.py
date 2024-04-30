@@ -28,7 +28,7 @@ class Trainer(nn.Module):
         if wandb_logging:
             wandb.watch(self.model, self.loss_fun, log='all')
 
-    def fit(self, epochs=5, print_metrics=True):
+    def fit(self, epochs=5, print_metrics=False):
         for _ in tqdm(range(epochs)):
             self._train_step(print_metrics)
             self._val_step(print_metrics)

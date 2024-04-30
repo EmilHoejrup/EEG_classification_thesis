@@ -11,7 +11,7 @@ from braindecode.models import ShallowFBCSPNet, EEGConformer
 from torch.optim.lr_scheduler import LRScheduler
 from itertools import product
 from trainer import Trainer
-from EEGTransformer import EEGTransformer, EEGTransformerEmb, EEGTransformerFlatten
+from EEGTransformer import EEGTransformer, EEGTransformerEmb, EEGTransformerFlatten, TransformerOnly
 from ConformerCopy import ConformerCopy
 from GraphFormer import GraphFormer
 
@@ -34,13 +34,16 @@ def run():
 
         if dataset_params == None:
             train_dataset = dataset(train=True)
-            val_dataset = dataset(train=False)
+            val_dataset = dataset(train=False, val=True)
+            test_dataset = dataset(train=False, val=False)
             train_dataloader = DataLoader(
                 dataset=train_dataset, batch_size=train_params['batch_size'], shuffle=True)
             val_dataloader = DataLoader(
                 dataset=val_dataset, batch_size=train_params['batch_size'], shuffle=True)
+            test_dataloader = DataLoader(
+                dataset=test_dataset, batch_size=train_params['batch_size'], shuffle=True)
             _, _, timepoints = train_dataset.get_X_shape()
-            train_models(train_dataloader, val_dataloader,
+            train_models(train_dataloader, val_dataloader, test_dataloader,
                          timepoints)
         else:
             param_combinations = product(*dataset_params.values())
@@ -53,11 +56,11 @@ def run():
                     dataset=val_dataset, batch_size=train_params['batch_size'], shuffle=True)
                 _, _, timepoints = train_dataset.get_X_shape()
                 vocab_size = train_dataset.get_vocab_size()
-                train_models(train_dataloader, val_dataloader,
+                train_models(train_dataloader, val_dataloader, test_dataloader,
                              timepoints, combination, vocab_size=vocab_size)
 
 
-def train_models(train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs, vocab_size=None):
+def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, dataset_combination=None, configs=configs, vocab_size=None):
     models = configs['models_to_train']
     for model_type in models:
         model_params = configs.get('models').get(model_type)
@@ -74,6 +77,9 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
             elif model_type == 'EEGTransformer':
                 model = EEGTransformer(
                     **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
+            elif model_type == 'TransformerOnly':
+                model = TransformerOnly(
+                    **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
             elif model_type == 'EEGTransformerEmb':
                 model = EEGTransformerEmb(
                     **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
@@ -88,10 +94,24 @@ def train_models(train_dataloader, val_dataloader, timepoints, dataset_combinati
                     **args, num_classes=num_classes, vocab_size=vocab_size)
 
             train(model, train_dataloader,
-                  val_dataloader, timepoints, dataset_combination, configs=configs)
+                  val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs)
 
 
-def train(model, train_dataloader, val_dataloader, timepoints, dataset_combination=None, configs=configs):
+def test(model, test_dataloader):
+    criterion = nn.CrossEntropyLoss()
+    test_acc = 0
+    model.eval()
+    for batch, (X, y) in enumerate(test_dataloader):
+        X, y = X.to(device), y.to(device)
+        y_logits = model(X)
+        loss = criterion(y_logits, y)
+        _, predicted = torch.max(y_logits, 1)
+        test_acc += (predicted == y).sum().item()
+    test_acc /= len(test_dataloader.dataset)
+    return test_acc
+
+
+def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, dataset_combination=None, configs=configs):
 
     if configs['train_params']['wandb_logging']:
         with wandb.init(project=configs['train_params']['project_name']):
@@ -116,7 +136,11 @@ def train(model, train_dataloader, val_dataloader, timepoints, dataset_combinati
                                                                    T_max=configs['train_params']['epochs'])
             trainer = Trainer(
                 model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device)
-            trainer.fit(epochs=configs['train_params']['epochs'])
+            trainer.fit(epochs=configs['train_params']
+                        ['epochs'], print_metrics=False)
+            if configs['test']:
+                test_accuracy = test(model, test_dataloader)
+                wandb.log({'test_accuracy': test_accuracy})
     else:
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(
@@ -125,7 +149,12 @@ def train(model, train_dataloader, val_dataloader, timepoints, dataset_combinati
                                                                T_max=configs['train_params']['epochs'])
         trainer = Trainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, wandb_logging=False)
-        trainer.fit(epochs=configs['train_params']['epochs'])
+        trainer.fit(epochs=configs['train_params']
+                    ['epochs'], print_metrics=False)
+
+        if configs['test']:
+            test_accuracy = test(model, test_dataloader)
+            print(f"Test accuracy: {test_accuracy}")
 
 
 # %%

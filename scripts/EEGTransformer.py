@@ -50,6 +50,24 @@ class _ClassificationHead(nn.Module):
         return x
 
 
+class TransformerOnly(nn.Module):
+    def __init__(self, seq_len, vocab_size, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
+        super(TransformerOnly, self).__init__()
+        self.transformer_encoder = _TransformerEncoder(
+            depth, emb_size, nhead, expansion, dropout)
+        self.clshead = ClassificationHead(seq_len*emb_size, num_classes)
+        self.positional_encoding = _PositionalEncoding(emb_size)
+
+    def forward(self, x):
+        x = x.squeeze(-1)
+        x = rearrange(x, 'b c t -> b t c')
+        # x = self.positional_encoding(x)
+        x = self.transformer_encoder(x)
+        # x, out = self.clshead(x)
+        out = self.clshead(x)
+        return out
+
+
 class EEGTransformer(nn.Module):
     def __init__(self, seq_len, vocab_size, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
         super(EEGTransformer, self).__init__()

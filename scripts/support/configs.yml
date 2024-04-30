@@ -1,19 +1,22 @@
 models_to_train: [
-    "EEGTransformerFlatten",
-    # "EEGConformer",
+    # "EEGTransformerFlatten",
+    "TransformerOnly",
+    "EEGConformer",
     # "EEGTransformer",
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
   ]
 dataset_list: [
-    # "BCI_2A_CONTINUOUS",
-    # "BCI_2B_CONTINUOUS",
+    "BCI_2A_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2B_PERMUTED",
+    # "SIMPLE_BCI_2A_PERMUTED",
+    # "SIMPLE_BCI_2B_PERMUTED",
   ]
+test: True
+
 train_params:
   epochs: 900
   batch_size: 32
@@ -21,7 +24,7 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "dataset 2a 1.0"
+  project_name: "first test accuracy"
 
 models:
   EEGConformer:
@@ -34,6 +37,12 @@ models:
     dropout: [0.5]
     emb_size: [10]
   EEGTransformer:
+    nhead: [2]
+    depth: [2]
+    emb_size: [22]
+    expansion: [4]
+    dropout: [0.7]
+  TransformerOnly:
     nhead: [2]
     depth: [2]
     emb_size: [22]
