@@ -1,4 +1,5 @@
 # %%
+from sklearn.metrics import cohen_kappa_score
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,8 +12,8 @@ from braindecode.models import ShallowFBCSPNet, EEGConformer
 from torch.optim.lr_scheduler import LRScheduler
 from itertools import product
 from trainer import Trainer
-from EEGTransformer import EEGTransformer, EEGTransformerEmb, EEGTransformerFlatten, TransformerOnly
-from ConformerCopy import ConformerCopy
+from models import *
+
 from GraphFormer import GraphFormer
 
 has_gpu = torch.cuda.is_available()
@@ -77,8 +78,8 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             if model_type == 'EEGConformer':
                 model = EEGConformer(
                     **args, n_outputs=num_classes, n_times=timepoints)
-            elif model_type == 'EEGTransformer':
-                model = EEGTransformer(
+            elif model_type == 'PPModel':
+                model = PPModel(
                     **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
             elif model_type == 'TransformerOnly':
                 model = TransformerOnly(
@@ -86,14 +87,11 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             elif model_type == 'EEGTransformerEmb':
                 model = EEGTransformerEmb(
                     **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
-            elif model_type == 'ConformerCopy':
-                model = ConformerCopy(
-                    **args, num_classes=num_classes, vocab_size=vocab_size)
             elif model_type == 'GraphFormer':
                 model = GraphFormer(
                     **args, num_classes=num_classes, seq_len=timepoints)
-            elif model_type == 'EEGTransformerFlatten':
-                model = EEGTransformerFlatten(
+            elif model_type == 'SimplePPModel':
+                model = SimplePPModel(
                     **args, num_classes=num_classes, vocab_size=vocab_size)
 
             train(model, train_dataloader,
@@ -111,11 +109,16 @@ def test(model, test_dataloader):
         _, predicted = torch.max(y_logits, 1)
         test_acc += (predicted == y).sum().item()
     test_acc /= len(test_dataloader.dataset)
-    return test_acc
+    kappa = cohen_kappa_score(y.cpu().numpy(), predicted.cpu().numpy())
+    return test_acc, kappa
 
 
 def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, dataset_combination=None, configs=configs):
-
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(
+    ), lr=configs['train_params']['lr'], weight_decay=configs['train_params']['weight_decay'])
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
+                                                           T_max=configs['train_params']['epochs'])
     if configs['train_params']['wandb_logging']:
         with wandb.init(project=configs['train_params']['project_name']):
             if dataset_combination:
@@ -132,32 +135,24 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
             else:
                 run_name += 'continuous'
             wandb.run.name = run_name
-            criterion = nn.CrossEntropyLoss()
-            optimizer = torch.optim.Adam(model.parameters(
-            ), lr=configs['train_params']['lr'], weight_decay=configs['train_params']['weight_decay'])
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
-                                                                   T_max=configs['train_params']['epochs'])
+
             trainer = Trainer(
                 model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device)
             trainer.fit(epochs=configs['train_params']
                         ['epochs'], print_metrics=False)
             if configs['test']:
-                test_accuracy = test(model, test_dataloader)
-                wandb.log({'test_accuracy': test_accuracy})
+                test_accuracy, kappa = test(model, test_dataloader)
+                wandb.log({'Test accuracy': test_accuracy, 'Kappa': kappa})
     else:
-        criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(
-        ), lr=configs['train_params']['lr'], weight_decay=configs['train_params']['weight_decay'])
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
-                                                               T_max=configs['train_params']['epochs'])
         trainer = Trainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, wandb_logging=False)
         trainer.fit(epochs=configs['train_params']
                     ['epochs'], print_metrics=False)
 
         if configs['test']:
-            test_accuracy = test(model, test_dataloader)
+            test_accuracy, kappa = test(model, test_dataloader)
             print(f"Test accuracy: {test_accuracy}")
+            print(f"Kappa: {kappa}")
 
 
 # %%

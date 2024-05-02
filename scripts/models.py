@@ -10,9 +10,9 @@ import math
 from layers import _PositionalEncoding, _TransformerEncoder, ClassificationHead
 
 
-class EEGTransformerFlatten(nn.Module):
+class SimplePPModel(nn.Module):
     def __init__(self, vocab_size, emb_size, nhead=2, num_classes=2, expansion=4, dropout=0.5):
-        super(EEGTransformerFlatten, self).__init__()
+        super(SimplePPModel, self).__init__()
         # self.transformer_encoder = _TransformerEncoder(
         #     depth, emb_size, nhead, expansion, dropout)
         self.transformer_encoder = nn.TransformerEncoderLayer(
@@ -68,9 +68,9 @@ class TransformerOnly(nn.Module):
         return out
 
 
-class EEGTransformer(nn.Module):
+class PPModel(nn.Module):
     def __init__(self, seq_len, vocab_size, nhead=2, num_classes=2, depth=2, emb_size=22, expansion=4, dropout=0.5):
-        super(EEGTransformer, self).__init__()
+        super(PPModel, self).__init__()
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
         self.clshead = ClassificationHead(seq_len*emb_size, num_classes)

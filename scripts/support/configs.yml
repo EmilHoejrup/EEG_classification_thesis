@@ -1,8 +1,8 @@
 models_to_train: [
-    "EEGTransformerFlatten",
+    # "SimplePPModel",
     # "TransformerOnly",
     # "EEGConformer",
-    # "EEGTransformer",
+    "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
@@ -10,10 +10,10 @@ models_to_train: [
 dataset_list: [
     # "BCI_2A_CONTINUOUS",
     # "BCI_2B_CONTINUOUS",
-    # "BCI_2B_PERMUTED",
-    # "BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2B_PERMUTED",
+    "BCI_2B_PERMUTED",
+    "BCI_2A_PERMUTED",
+    # "SIMPLE_BCI_2A_PERMUTED",
+    # "SIMPLE_BCI_2B_PERMUTED",
   ]
 test: True
 
@@ -24,19 +24,19 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "first test accuracy (64 batch no downsample)"
+  project_name: "Final report PP"
 
 models:
   EEGConformer:
     n_chans: [22]
     add_log_softmax: [False]
     final_fc_length: ["auto"]
-  EEGTransformerFlatten:
+  SimplePPModel:
     nhead: [2]
     expansion: [4]
     dropout: [0.5]
     emb_size: [10]
-  EEGTransformer:
+  PPModel:
     nhead: [2]
     depth: [2]
     emb_size: [22]
@@ -71,11 +71,11 @@ datasets:
   BCI_2A_CONTINUOUS:
   BCI_2B_CONTINUOUS:
   BCI_2A_PERMUTED:
-    window_size: [2]
-    stride: [1]
+    window_size: [5]
+    stride: [7]
   BCI_2B_PERMUTED:
-    window_size: [2]
-    stride: [1]
+    window_size: [5]
+    stride: [7]
   SIMPLE_BCI_2A_PERMUTED:
     window_size: [6, 7]
     stride: [7, 11]

@@ -111,10 +111,12 @@ class PERMUTATION_DATASET(Dataset):
         self.window_size = window_size
         self.stride = stride
         self.threshold = threshold
+        self.val = val
 
         _, _, timepoints = self.X.shape
 
         self.X = F.max_pool1d(self.X, 3, 3)
+        self.X = self._discretize(self.X)
 
         # Splitting into train, validation, and test sets
         self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
@@ -122,18 +124,13 @@ class PERMUTATION_DATASET(Dataset):
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
 
-        if self.train:
-            self.X_train = self._discretize(self.X_train)
-            # self.X_train = self.X_train.to(torch.float32)
-        elif self.val:
-            self.X_val = self._discretize(self.X_val)
-            # self.X_val = self.X_val.to(torch.float32)
-        else:
-            self.X_test = self._discretize(self.X_test)
-            # self.X_test = self.X_test.to(torch.float32)
-
     def get_X_shape(self):
-        return self.X_train.shape
+        if self.train:
+            return self.X_train.shape
+        elif self.val:
+            return self.X_val.shape
+        else:
+            return self.X_test.shape
 
     def get_vocab_size(self):
         return len(self.permutations)
@@ -144,15 +141,15 @@ class PERMUTATION_DATASET(Dataset):
 
         self.permutations = [list(perm)
                              for perm in product(values, repeat=self.window_size)]
-        images, channels, timepoints = X.shape
+        trials, channels, timepoints = X.shape
         discretized_X = []
-        for image in range(images):
-            image_sequence = []
+        for trial in range(trials):
+            trial_sequence = []
             for channel in range(channels):
-                sequence = X[image, channel]
+                sequence = X[trial, channel]
                 discretized_sequence = self._permute(sequence)
-                image_sequence.append(discretized_sequence)
-            discretized_X.append(image_sequence)
+                trial_sequence.append(discretized_sequence)
+            discretized_X.append(trial_sequence)
         return torch.tensor(discretized_X, dtype=torch.long)
 
     def _permute(self, X):
@@ -206,26 +203,22 @@ class SIMPLE_PERMUTATION_DATASET(Dataset):
         self.stride = stride
         self.threshold = threshold
 
-        # self.X = F.max_pool1d(self.X, 3, 3)
+        self.X = F.max_pool1d(self.X, 3, 3)
+        self.X = self._discretize(self.X)
 
-        # Splitting into train, validation, and test sets
+# Splitting into train, validation, and test sets
         self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
             self.X, self.Y, test_size=test_ratio, random_state=random_state)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
 
-        if self.train:
-            self.X_train = self._discretize(self.X_train)
-            # self.X_train = self.X_train.to(torch.float32)
-        elif self.val:
-            self.X_val = self._discretize(self.X_val)
-            # self.X_val = self.X_val.to(torch.float32)
-        else:
-            self.X_test = self._discretize(self.X_test)
-            # self.X_test = self.X_test.to(torch.float32)
-
     def get_X_shape(self):
-        return self.X_train.shape
+        if self.train:
+            return self.X_train.shape
+        elif self.val:
+            return self.X_val.shape
+        else:
+            return self.X_test.shape
 
     def get_vocab_size(self):
         return len(self.permutations)
@@ -235,15 +228,15 @@ class SIMPLE_PERMUTATION_DATASET(Dataset):
         values = [0, 1]
         self.permutations = [list(perm)
                              for perm in product(values, repeat=self.window_size)]
-        images, channels, timepoints = X.shape
+        trials, channels, timepoints = X.shape
         discretized_X = []
-        for image in range(images):
-            image_sequence = []
+        for trial in range(trials):
+            trial_sequence = []
             for channel in range(channels):
-                sequence = X[image, channel]
+                sequence = X[trial, channel]
                 discretized_sequence = self._permute(sequence)
-                image_sequence.append(discretized_sequence)
-            discretized_X.append(image_sequence)
+                trial_sequence.append(discretized_sequence)
+            discretized_X.append(trial_sequence)
         return torch.tensor(discretized_X, dtype=torch.long)
 
     def _permute(self, X):
