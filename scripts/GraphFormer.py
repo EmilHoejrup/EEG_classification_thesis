@@ -41,7 +41,7 @@ class GraphFormer(nn.Module):
         x = self.spatial_embedding(x)
         # print("Spatial conv shape: ", x.shape)
         x = x.squeeze(dim=2)
-        x = self.graph_conv(x)
+        # x = self.graph_conv(x)
         # print("Squeezed shape: ", x.shape)
         x = rearrange(x, 'b e t -> b t e')
         x = self.transformer_encoder(x)
