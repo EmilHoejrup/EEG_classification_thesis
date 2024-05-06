@@ -20,49 +20,17 @@ from torch_geometric.nn import GCNConv, SGConv
 from torch_geometric.utils import dense_to_sparse
 
 
-# class GraphFormer(nn.Module):
-# def __init__(self, seq_len, K=2, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
-#     super(GraphFormer, self).__init__()
-#     # self.embedding = nn.Embedding(vocab_size, emb_size)
-#     self.spatial_conv = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
-#     self.graph_conv = _GraphConvolution(194, 194, emb_size, K)
-#     self.spatial_embedding = _SpatialEmbedding(emb_size)
-#     self.transformer_encoder = _TransformerEncoder(
-#         depth, emb_size, nhead, expansion, dropout)
-#     self.clshead = ClassificationHead(194*emb_size, num_classes)
-
-# def forward(self, x):
-#     # x = torch.unsqueeze(x, dim=1)
-#     x = x.unsqueeze(dim=1)
-#     # print("Embedding shape: ", x.shape)
-#     # x = rearrange(x, 'b c t e -> b e c t')
-#     # print("Rearranged shape: ", x.shape)
-#     # x = self.spatial_conv(x)
-#     x = self.spatial_embedding(x)
-#     print("Spatial conv shape: ", x.shape)
-#     x = x.squeeze(dim=2)
-#     # x = self.graph_conv(x)
-#     # print("Squeezed shape: ", x.shape)
-#     x = rearrange(x, 'b e t -> b t e')
-#     x = self.transformer_encoder(x)
-#     # print("Transformer shape: ", x.shape)
-#     # x, out = self.clshead(x)
-#     out = self.clshead(x)
-#     return out
-
-#### TEMPORAL GRAPH ####
-
 class _SpatialEmbedding(nn.Module):
 
-    def __init__(self, emb_size):
+    def __init__(self, emb_size, K):
         super(_SpatialEmbedding, self).__init__()
-        self.temporal_graph = TemporalGraph(1001, 2, emb_size)
+        self.temporal_graph = TemporalGraph(1001, K, emb_size)
         self.spatial = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
         self.batchnorm = nn.BatchNorm2d(emb_size)
         self.elu = nn.ELU()
         self.dropout = nn.Dropout(0.5)
 
-        self.avgpool = nn.AvgPool2d((1, 75), (1, 15))
+        self.avgpool = nn.AvgPool2d((1, 15), (1, 5))
 
     def forward(self, x):
         # x = self.temporal(x)
@@ -102,14 +70,14 @@ class TemporalGraph(nn.Module):
 
 
 class GraphFormer(nn.Module):
-    def __init__(self, seq_len, K, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
+    def __init__(self, seq_len, K=2, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
         super(GraphFormer, self).__init__()
         # self.embedding = nn.Embedding(vocab_size, emb_size)
 
-        self.spatial_embedding = _SpatialEmbedding(emb_size)
+        self.spatial_embedding = _SpatialEmbedding(emb_size, K)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
-        avg_pool_output = (seq_len-75)//15 + 1
+        avg_pool_output = (seq_len-15)//5 + 1
         self.clshead = ClassificationHead(
             avg_pool_output*emb_size, num_classes)
 
