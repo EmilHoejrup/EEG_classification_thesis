@@ -66,7 +66,7 @@ models:
     emb_size: [8]
     expansion: [4]
     dropout: [0.5, 0.8]
-    K: [2, 7]
+    K: [7]
 datasets:
   BCI_2A_CONTINUOUS:
   BCI_2B_CONTINUOUS:

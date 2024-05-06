@@ -22,15 +22,15 @@ from torch_geometric.utils import dense_to_sparse
 
 class _SpatialEmbedding(nn.Module):
 
-    def __init__(self, emb_size, K):
+    def __init__(self, emb_size, K, seq_len, avg_pool_kernel, avg_pool_stride):
         super(_SpatialEmbedding, self).__init__()
-        self.temporal_graph = TemporalGraph(1001, K, emb_size)
+        self.temporal_graph = TemporalGraph(seq_len, K, emb_size)
         self.spatial = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
         self.batchnorm = nn.BatchNorm2d(emb_size)
         self.elu = nn.ELU()
         self.dropout = nn.Dropout(0.5)
 
-        self.avgpool = nn.AvgPool2d((1, 5), (1, 3))
+        self.avgpool = nn.AvgPool2d((1, avg_pool_kernel), (1, avg_pool_stride))
 
     def forward(self, x):
         # x = self.temporal(x)
@@ -70,14 +70,15 @@ class TemporalGraph(nn.Module):
 
 
 class GraphFormer(nn.Module):
-    def __init__(self, seq_len, K=2, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5):
+    def __init__(self, seq_len, K=2, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5, avg_pool_kernel=5, avg_pool_stride=3):
         super(GraphFormer, self).__init__()
         # self.embedding = nn.Embedding(vocab_size, emb_size)
 
-        self.spatial_embedding = _SpatialEmbedding(emb_size, K)
+        self.spatial_embedding = _SpatialEmbedding(
+            emb_size, K, seq_len, avg_pool_kernel, avg_pool_stride)
         self.transformer_encoder = _TransformerEncoder(
             depth, emb_size, nhead, expansion, dropout)
-        avg_pool_output = (seq_len-15)//5 + 1
+        avg_pool_output = (seq_len-avg_pool_kernel)//avg_pool_stride + 1
         self.clshead = ClassificationHead(
             avg_pool_output*emb_size, num_classes)
 
