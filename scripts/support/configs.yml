@@ -24,7 +24,7 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "GraphFormer last emb=20"
+  project_name: "Simple GraphFormer"
 
 models:
   EEGConformer:
