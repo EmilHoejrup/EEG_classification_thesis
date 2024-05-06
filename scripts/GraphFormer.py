@@ -30,7 +30,7 @@ class _SpatialEmbedding(nn.Module):
         self.elu = nn.ELU()
         self.dropout = nn.Dropout(0.5)
 
-        self.avgpool = nn.AvgPool2d((1, 15), (1, 5))
+        self.avgpool = nn.AvgPool2d((1, 5), (1, 3))
 
     def forward(self, x):
         # x = self.temporal(x)
