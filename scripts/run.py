@@ -1,5 +1,5 @@
 # %%
-from sklearn.metrics import cohen_kappa_score
+from sklearn.metrics import cohen_kappa_score, precision_score, recall_score
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,15 +8,14 @@ import yaml
 from datasets import *
 from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
+from support.utils import test_metrics
 from braindecode.models import ShallowFBCSPNet, EEGConformer
 from torch.optim.lr_scheduler import LRScheduler
 from itertools import product
 from trainer import Trainer
 from models import *
-
 from GraphFormer import GraphFormer
 
-has_gpu = torch.cuda.is_available()
 has_gpu = torch.cuda.is_available()
 device = 'mps' if getattr(
     torch, 'torch.backends.mps.is_built()', False) else 'cuda' if has_gpu else 'cpu'
@@ -98,21 +97,6 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
                   val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs)
 
 
-def test(model, test_dataloader):
-    criterion = nn.CrossEntropyLoss()
-    test_acc = 0
-    model.eval()
-    for batch, (X, y) in enumerate(test_dataloader):
-        X, y = X.to(device), y.to(device)
-        y_logits = model(X)
-        loss = criterion(y_logits, y)
-        _, predicted = torch.max(y_logits, 1)
-        test_acc += (predicted == y).sum().item()
-    test_acc /= len(test_dataloader.dataset)
-    kappa = cohen_kappa_score(y.cpu().numpy(), predicted.cpu().numpy())
-    return test_acc, kappa
-
-
 def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, dataset_combination=None, configs=configs):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(
@@ -141,8 +125,10 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
             trainer.fit(epochs=configs['train_params']
                         ['epochs'], print_metrics=False)
             if configs['test']:
-                test_accuracy, kappa = test(model, test_dataloader)
-                wandb.log({'Test accuracy': test_accuracy, 'Kappa': kappa})
+                test_accuracy, kappa, precision, recall, f1_score = test_metrics(
+                    model, test_dataloader)
+                wandb.log({'Test accuracy': test_accuracy, 'Kappa': kappa,
+                          'Precision': precision, 'Recall': recall, 'F1 Score': f1_score})
     else:
         trainer = Trainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, wandb_logging=False)
@@ -150,9 +136,13 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
                     ['epochs'], print_metrics=False)
 
         if configs['test']:
-            test_accuracy, kappa = test(model, test_dataloader)
+            test_accuracy, kappa, precision, recall, f1_score = test_metrics(
+                model, test_dataloader)
             print(f"Test accuracy: {test_accuracy}")
             print(f"Kappa: {kappa}")
+            print(f"Precision: {precision}")
+            print(f"Recall: {recall}")
+            print(f"F1 Score: {f1_score}")
 
 
 # %%

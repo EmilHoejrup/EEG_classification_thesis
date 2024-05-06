@@ -2,16 +2,16 @@ models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
     # "EEGConformer",
-    "PPModel",
+    # "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
-    # "GraphFormer",
+    "GraphFormer",
   ]
 dataset_list: [
     # "BCI_2A_CONTINUOUS",
-    # "BCI_2B_CONTINUOUS",
-    "BCI_2B_PERMUTED",
-    "BCI_2A_PERMUTED",
+    "BCI_2B_CONTINUOUS",
+    # "BCI_2B_PERMUTED",
+    # "BCI_2A_PERMUTED",
     # "SIMPLE_BCI_2A_PERMUTED",
     # "SIMPLE_BCI_2B_PERMUTED",
   ]
@@ -24,7 +24,7 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Final report PP"
+  project_name: "Simple GraphFormer"
 
 models:
   EEGConformer:
@@ -63,7 +63,7 @@ models:
   GraphFormer:
     nhead: [2]
     depth: [2]
-    emb_size: [20]
+    emb_size: [8]
     expansion: [4]
     dropout: [0.5, 0.8]
     K: [2, 7]
