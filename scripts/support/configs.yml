@@ -24,7 +24,7 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Simple GraphFormer"
+  project_name: "GraphFormer last emb=20"
 
 models:
   EEGConformer:
@@ -63,10 +63,10 @@ models:
   GraphFormer:
     nhead: [2]
     depth: [2]
-    emb_size: [8]
+    emb_size: [20]
     expansion: [4]
     dropout: [0.5, 0.8]
-    K: [7]
+    K: [2, 7]
 datasets:
   BCI_2A_CONTINUOUS:
   BCI_2B_CONTINUOUS:
