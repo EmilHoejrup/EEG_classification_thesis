@@ -129,10 +129,10 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
             trainer.fit(epochs=configs['train_params']
                         ['epochs'], print_metrics=False)
             if configs['test']:
-                test_accuracy, kappa, precision, recall, f1_score = test_metrics(
+                test_accuracy, kappa, precision, recall = test_metrics(
                     model, test_dataloader)
                 wandb.log({'Test accuracy': test_accuracy, 'Kappa': kappa,
-                          'Precision': precision, 'Recall': recall, 'F1 Score': f1_score})
+                          'Precision': precision, 'Recall': recall})
     else:
         trainer = Trainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, wandb_logging=False)

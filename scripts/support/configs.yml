@@ -25,7 +25,7 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Simple GraphFormer Last"
+  project_name: "Simple GraphFormer"
   run_name: "Simple depth: 5, max_pool in dataset (3,2)"
 
 models:

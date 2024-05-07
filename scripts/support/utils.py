@@ -103,18 +103,17 @@ def test_metrics(model, test_dataloader):
     kappa = cohen_kappa_score(y.cpu().numpy(), predicted.cpu().numpy())
     precision = precision_score(y.cpu().numpy(), predicted.cpu().numpy())
     recall = recall_score(y.cpu().numpy(), predicted.cpu().numpy())
-    f1_score = f1_score(y.cpu().numpy(), predicted.cpu().numpy())
-    return test_acc, kappa, precision, recall, f1_score
+    return test_acc, kappa, precision, recall
 
 
-def f1_score(y_true, y_pred):
-    tp = sum([1 for i in range(len(y_true))
-             if y_true[i] == 1 and y_pred[i] == 1])
-    fp = sum([1 for i in range(len(y_true))
-             if y_true[i] == 0 and y_pred[i] == 1])
-    fn = sum([1 for i in range(len(y_true))
-             if y_true[i] == 1 and y_pred[i] == 0])
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
-    f1 = 2 * (precision * recall) / (precision + recall)
-    return f1
+# def f1_score(y_true, y_pred):
+#     tp = sum([1 for i in range(len(y_true))
+#              if y_true[i] == 1 and y_pred[i] == 1])
+#     fp = sum([1 for i in range(len(y_true))
+#              if y_true[i] == 0 and y_pred[i] == 1])
+#     fn = sum([1 for i in range(len(y_true))
+#              if y_true[i] == 1 and y_pred[i] == 0])
+#     precision = tp / (tp + fp)
+#     recall = tp / (tp + fn)
+#     f1 = 2 * (precision * recall) / (precision + recall)
+#     return f1
