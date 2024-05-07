@@ -381,7 +381,8 @@ class _GraphConvolution(nn.Module):
         self.K = K
         self.graph_constructor = GraphConstructor(
             nnodes=channels, k=K, dim=seq_len, alpha=0.1)
-        self.graph_conv = SGConv(seq_len, out_features, K=K)
+        # self.graph_conv = SGConv(seq_len, out_features, K=K)
+        self.graph_conv = GCNConv(seq_len, out_features)
         self.relu = nn.ReLU()
         self.dropout = dropout
 

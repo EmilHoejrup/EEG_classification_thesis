@@ -25,6 +25,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "Simple GraphFormer Last"
+  run_name: "Simple depth: 5, avg_pool in dataset (3,2)"
 
 models:
   EEGConformer:
@@ -63,7 +64,8 @@ models:
   GraphFormer:
     nhead: [2]
     depth: [2]
-    emb_size: [8]
+    emb_size: [22]
+    num_blocks: [3, 5, 7]
     expansion: [4]
     dropout: [0.5, 0.8]
     K: [2, 7]

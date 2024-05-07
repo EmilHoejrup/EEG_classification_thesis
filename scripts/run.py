@@ -118,6 +118,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
                 run_name += f" w: {window_size} s: {stride}"
             else:
                 run_name += 'continuous'
+            run_name += configs['train_params']['run_name']
             wandb.run.name = run_name
 
             trainer = Trainer(
