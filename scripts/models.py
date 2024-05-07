@@ -1,4 +1,4 @@
-from layers import _PositionalEncoding, _TransformerEncoder, ClassificationHead, _SpatialEmbedding
+from layers import _GraphConvolution, _PositionalEncoding, _TransformerEncoder, ClassificationHead, _SpatialEmbedding
 from einops import rearrange
 import torch
 from torch import nn
@@ -111,6 +111,47 @@ class EEGTransformerEmb(nn.Module):
         # print("Squeezed shape: ", x.shape)
         x = rearrange(x, 'b e t -> b t e')
         x = self.transformer_encoder(x)
+        # x, out = self.clshead(x)
+        out = self.clshead(x)
+        return out
+
+
+class SimpleGraphFormer(nn.Module):
+    def __init__(self, seq_len, K, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5, avg_pool_kernel=15, avg_pool_stride=5, num_blocks=3):
+        super(SimpleGraphFormer, self).__init__()
+        # self.embedding = nn.Embedding(vocab_size, emb_size)
+        avg_pool_output = (seq_len-avg_pool_kernel)//avg_pool_stride + 1
+        self.spatial_conv = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))
+        self.graph_conv = _GraphConvolution(
+            avg_pool_output, avg_pool_output, 22, K)
+        self.graph_convolutions = nn.Sequential(
+            *[_GraphConvolution(seq_len, seq_len, 22, K) for _ in range(num_blocks)])
+        self.spatial_embedding = _SpatialEmbedding(emb_size)
+        self.transformer_encoder = _TransformerEncoder(
+            depth, emb_size, nhead, expansion, dropout)
+        self.clshead = ClassificationHead(
+            avg_pool_output*emb_size, num_classes)
+        self.avgpool = nn.AvgPool2d((1, avg_pool_kernel), (1, avg_pool_stride))
+
+    def forward(self, x):
+        # x = torch.unsqueeze(x, dim=1)
+        # x = x.unsqueeze(dim=1)
+        # print("Embedding shape: ", x.shape)
+        # x = rearrange(x, 'b c t e -> b e c t')
+        # print("Rearranged shape: ", x.shape)
+        # x = self.graph_conv(x)
+        # x = _ResidualAdd(self.graph_conv)(x)
+        x = self.graph_convolutions(x)
+        x = self.avgpool(x)
+        # x = self.spatial_conv(x)
+        # x = self.spatial_embedding(x)
+        # print("Graph conv shape: ", x.shape)
+        # print("Spatial conv shape: ", x.shape)
+        x = x.squeeze(dim=2)
+        # print("Squeezed shape: ", x.shape)
+        x = rearrange(x, 'b e t -> b t e')
+        x = self.transformer_encoder(x)
+        # print("Transformer shape: ", x.shape)
         # x, out = self.clshead(x)
         out = self.clshead(x)
         return out

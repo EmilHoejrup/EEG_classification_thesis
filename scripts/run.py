@@ -92,6 +92,9 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             elif model_type == 'SimplePPModel':
                 model = SimplePPModel(
                     **args, num_classes=num_classes, vocab_size=vocab_size)
+            elif model_type == 'SimpleGraphFormer':
+                model = SimpleGraphFormer(
+                    **args, num_classes=num_classes, seq_len=timepoints)
 
             train(model, train_dataloader,
                   val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs)
