@@ -133,6 +133,8 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
                     model, test_dataloader)
                 wandb.log({'Test accuracy': test_accuracy, 'Kappa': kappa,
                           'Precision': precision, 'Recall': recall})
+                wandb.log({'F1 Score': 2*(precision*recall)/(precision+recall)})
+                wandb.log({'model_params': model.state_dict()})
     else:
         trainer = Trainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, wandb_logging=False)

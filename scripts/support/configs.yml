@@ -9,7 +9,7 @@ models_to_train: [
     "SimpleGraphFormer",
   ]
 dataset_list: [
-    # "BCI_2A_CONTINUOUS",
+    "BCI_2A_CONTINUOUS",
     "BCI_2B_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
@@ -19,14 +19,14 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 500
-  batch_size: 32
+  epochs: 900
+  batch_size: 64
   lr: 0.0001
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "Simple GraphFormer"
-  run_name: "Simple depth: 5, max_pool in dataset (3,2), 500 epochs batch size: 32"
+  run_name: "ChebyConv"
 
 models:
   EEGConformer:
@@ -66,7 +66,7 @@ models:
     nhead: [2]
     depth: [2]
     emb_size: [22]
-    num_blocks: [5, 7]
+    num_blocks: [3, 5, 7]
     expansion: [4]
     dropout: [0.5]
     K: [2, 7]

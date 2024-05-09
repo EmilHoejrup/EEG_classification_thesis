@@ -100,6 +100,22 @@ def test_metrics(model, test_dataloader):
         _, predicted = torch.max(y_logits, 1)
         test_acc += (predicted == y).sum().item()
     test_acc /= len(test_dataloader.dataset)
+    if len(y.unique()) > 2:
+        weighted_kappa = cohen_kappa_score(
+            y.cpu().numpy(), predicted.cpu().numpy(), weights='quadratic')
+        weighted_precision = precision_score(
+            y.cpu().numpy(), predicted.cpu().numpy(), average='weighted')
+        weighted_recall = recall_score(
+            y.cpu().numpy(), predicted.cpu().numpy(), average='weighted')
+        return test_acc, weighted_kappa, weighted_precision, weighted_recall
+    else:
+        weighted_kappa = cohen_kappa_score(
+            y.cpu().numpy(), predicted.cpu().numpy())
+        weighted_precision = precision_score(
+            y.cpu().numpy(), predicted.cpu().numpy())
+        weighted_recall = recall_score(
+            y.cpu().numpy(), predicted.cpu().numpy())
+        return test_acc, weighted_kappa, weighted_precision, weighted_recall
     kappa = cohen_kappa_score(y.cpu().numpy(), predicted.cpu().numpy())
     precision = precision_score(y.cpu().numpy(), predicted.cpu().numpy())
     recall = recall_score(y.cpu().numpy(), predicted.cpu().numpy())
