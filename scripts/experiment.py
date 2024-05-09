@@ -14,7 +14,6 @@ import torch
 import torch.nn as nn
 from datasets import *
 from trainer import *
-from ConformerCopy import ConformerCopy
 from scripts.models import EEGTransformer, EEGTransformerEmb
 from support.utils import *
 import yaml
