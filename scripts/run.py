@@ -97,10 +97,10 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
                     **args, num_classes=num_classes, seq_len=timepoints)
 
             train(model, train_dataloader,
-                  val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs)
+                  val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs, args=args)
 
 
-def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, dataset_combination=None, configs=configs):
+def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, dataset_combination=None, configs=configs, args=None):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(
     ), lr=configs['train_params']['lr'], weight_decay=configs['train_params']['weight_decay'])
@@ -115,6 +115,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
                 configs.update({'model': model.__class__.__name__,
                                 'sequence length': timepoints})
             wandb.config.update(configs)
+            wandb.config.update(args)
             run_name = f"{model.__class__.__name__} {train_dataloader.dataset.__class__.__name__}"
             if dataset_combination:
                 window_size, stride = dataset_combination
@@ -134,7 +135,6 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
                 wandb.log({'Test accuracy': test_accuracy, 'Kappa': kappa,
                           'Precision': precision, 'Recall': recall})
                 wandb.log({'F1 Score': 2*(precision*recall)/(precision+recall)})
-                wandb.log({'model_params': model.state_dict()})
     else:
         trainer = Trainer(
             model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, wandb_logging=False)
