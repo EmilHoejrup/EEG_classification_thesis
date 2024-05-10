@@ -3,7 +3,7 @@
 #SBATCH --job-name=run          
 #SBATCH --output=job.%j.out     
 #SBATCH --cpus-per-task=1      
-#SBATCH --time=4:00:00
+#SBATCH --time=8:00:00
 #SBATCH --partition=brown
 #SBATCH --gres=gpu
 

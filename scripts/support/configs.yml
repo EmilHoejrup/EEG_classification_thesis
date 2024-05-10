@@ -9,7 +9,7 @@ models_to_train: [
     "SimpleGraphFormer",
   ]
 dataset_list: [
-    "BCI_2A_CONTINUOUS",
+    # "BCI_2A_CONTINUOUS",
     "BCI_2B_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
