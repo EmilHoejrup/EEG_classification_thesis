@@ -1,20 +1,21 @@
 models_to_train: [
-    "SimplePPModel",
+    # "SimplePPModel",
     # "TransformerOnly",
-    # "EEGConformer",
+    "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
     # "SimpleGraphFormer",
+    "ShallowFBCSPNet",
   ]
 dataset_list: [
-    # "BCI_2A_CONTINUOUS",
-    # "BCI_2B_CONTINUOUS",
+    "BCI_2A_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2B_PERMUTED",
+    # "SIMPLE_BCI_2A_PERMUTED",
+    # "SIMPLE_BCI_2B_PERMUTED",
   ]
 test: True
 
@@ -25,7 +26,7 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Simple PP again 2a"
+  project_name: "Shallow + conformer benchmark"
   run_name: "ChebyConv without graph"
 
 models:
@@ -56,6 +57,9 @@ models:
     emb_size: [20]
     expansion: [4]
     dropout: [0.7]
+  ShallowFBCSPNet:
+    n_chans: [22]
+    final_conv_length: ["auto"]
   ConformerCopy:
     nhead: [2]
     depth: [2]

@@ -10,7 +10,7 @@ from datasets import read_X_and_y
 from mne.decoding import CSP
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
-BNCI = DATA_DIR / 'BNCI2014_001'
+BNCI = DATA_DIR / 'BCI_IV_2A'
 X_FILE = BNCI / 'X.npy.gz'
 Y_FILE = BNCI / 'Y.p'
 
@@ -45,8 +45,10 @@ def train(epochs_array, labels):
     # Printing the results
     class_balance = np.mean(labels == labels[0])
     class_balance = max(class_balance, 1.0 - class_balance)
+    num_classes = len(np.unique(labels))
+    chance_level = 1 / num_classes
     print(
-        f"Classification accuracy: {np.mean(scores)} / Chance level: {class_balance}")
+        f"Classification accuracy: {np.mean(scores)} / Chance level: {chance_level}")
 
 
 if __name__ == '__main__':

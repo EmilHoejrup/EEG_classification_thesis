@@ -95,6 +95,9 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             elif model_type == 'SimpleGraphFormer':
                 model = SimpleGraphFormer(
                     **args, num_classes=num_classes, seq_len=timepoints)
+            elif model_type == 'ShallowFBCSPNet':
+                model = ShallowFBCSPNet(
+                    **args, n_classes=num_classes, input_window_samples=timepoints)
 
             train(model, train_dataloader,
                   val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs, args=args)
