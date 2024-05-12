@@ -40,7 +40,7 @@ class GraphFormer(nn.Module):
         # x = rearrange(x, 'b c t e -> b e c t')
         # print("Rearranged shape: ", x.shape)
         # x = self.spatial_conv(x)
-        x = self.graph_conv(x)
+        # x = self.graph_conv(x)
         x = self.spatial_embedding(x)
         # print("Spatial conv shape: ", x.shape)
         x = x.squeeze(dim=2)
