@@ -27,7 +27,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "Shallow + conformer benchmark"
-  run_name: "ChebyConv without graph"
+  run_name: "NO DOWNSAMPLING"
 
 models:
   EEGConformer:
