@@ -59,7 +59,7 @@ class CONTINUOUS_DATASET(Dataset):
         baseline_mean = torch.mean(
             self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
         self.X = self.X - baseline_mean
-        # self.X = F.max_pool1d(self.X, 3, 2)
+        self.X = F.max_pool1d(self.X, 3, 2)
 
         # Splitting into train, validation, and test sets
         self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
