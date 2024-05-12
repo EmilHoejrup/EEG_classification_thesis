@@ -1,31 +1,31 @@
 models_to_train: [
-    # "SimplePPModel",
+    "SimplePPModel",
     # "TransformerOnly",
     # "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
-    "GraphFormer",
+    # "GraphFormer",
     # "SimpleGraphFormer",
   ]
 dataset_list: [
     # "BCI_2A_CONTINUOUS",
-    "BCI_2B_CONTINUOUS",
+    # "BCI_2B_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
-    # "SIMPLE_BCI_2A_PERMUTED",
-    # "SIMPLE_BCI_2B_PERMUTED",
+    "SIMPLE_BCI_2A_PERMUTED",
+    "SIMPLE_BCI_2B_PERMUTED",
   ]
 test: True
 
 train_params:
-  epochs: 450
+  epochs: 900
   batch_size: 64
   lr: 0.0001
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Graphformer NEW"
+  project_name: "Simple PP again 2a"
   run_name: "ChebyConv without graph"
 
 models:
@@ -89,8 +89,8 @@ datasets:
     window_size: [5]
     stride: [7]
   SIMPLE_BCI_2A_PERMUTED:
-    window_size: [6, 7]
-    stride: [7, 11]
+    window_size: [7]
+    stride: [11]
   SIMPLE_BCI_2B_PERMUTED:
     window_size: [7]
     stride: [11]
