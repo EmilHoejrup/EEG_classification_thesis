@@ -10,6 +10,26 @@ import math
 from layers import _PositionalEncoding, _TransformerEncoder, ClassificationHead
 
 
+class SimpleShallowNet(nn.Module):
+    def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75):
+        super(SimpleShallowNet, self).__init__()
+        maxpool_out = timepoints // pool_size
+        self.spatio_temporal = nn.Conv2d(
+            in_channels, num_kernels, (1, kernel_size))
+        self.pool = nn.MaxPool2d((1, pool_size))
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
+
+    def forward(self, x):
+        x = torch.unsqueeze(x, dim=2)
+        x = F.elu(self.spatio_temporal(x))
+        x = self.pool(x)
+        x = x.view(x.size(0), -1)
+        x = self.dropout(x)
+        x = self.fc(x)
+        return x
+
+
 class SimplePPModel(nn.Module):
     def __init__(self, vocab_size, emb_size, nhead=2, num_classes=2, expansion=4, dropout=0.5):
         super(SimplePPModel, self).__init__()

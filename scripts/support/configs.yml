@@ -1,16 +1,17 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    "EEGConformer",
+    # "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
+    "SimpleShallowNet",
   ]
 dataset_list: [
-    # "BCI_2A_CONTINUOUS",
+    "BCI_2A_CONTINUOUS",
     "BCI_2B_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
@@ -26,8 +27,8 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "Shallow + conformer benchmark"
-  run_name: "NO DOWNSAMPLING"
+  project_name: "SimpleShallowNet"
+  run_name: "First implementation"
 
 models:
   EEGConformer:
@@ -83,6 +84,12 @@ models:
     expansion: [4]
     dropout: [0.6]
     K: [2, 3, 7]
+  SimpleShallowNet:
+    dropout: [0.3, 0.5, 0.7]
+    in_channels: [22]
+    num_kernels: [20, 30, 40, 50]
+    kernel_size: [15, 20, 25, 30, 50]
+    pool_size: [15, 30, 45, 75]
 datasets:
   BCI_2A_CONTINUOUS:
   BCI_2B_CONTINUOUS:
