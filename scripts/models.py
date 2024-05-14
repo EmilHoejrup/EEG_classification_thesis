@@ -13,7 +13,7 @@ from layers import _PositionalEncoding, _TransformerEncoder, ClassificationHead
 class SimpleShallowNet(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75):
         super(SimpleShallowNet, self).__init__()
-        maxpool_out = timepoints // pool_size
+        maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
         self.pool = nn.MaxPool2d((1, pool_size))
