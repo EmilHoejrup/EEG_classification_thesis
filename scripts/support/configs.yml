@@ -29,7 +29,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "SimpleShallowNet modifications"
-  run_name: "Mean pooling"
+  run_name: "Batch norm"
 
 models:
   EEGConformer:
