@@ -31,7 +31,7 @@ class SimpleShallowNet(nn.Module):
 
 
 class SimpleConformer(nn.Module):
-    def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75):
+    def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
         super(SimpleConformer, self).__init__()
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
@@ -39,7 +39,7 @@ class SimpleConformer(nn.Module):
         self.pool = nn.MaxPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
         self.transformer = nn.TransformerEncoderLayer(
-            d_model=num_kernels, nhead=2, dim_feedforward=4*num_kernels, dropout=dropout)
+            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout)
         self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
 
     def forward(self, x):

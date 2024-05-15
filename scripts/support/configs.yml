@@ -8,7 +8,7 @@ models_to_train: [
     # "GraphFormer",
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
-    # "SimpleShallowNet",
+    "SimpleShallowNet",
     "SimpleConformer",
   ]
 dataset_list: [
@@ -28,7 +28,7 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "SimpleConformer"
+  project_name: "SimpleConformer + shallownet"
   run_name: "First implementation"
 
 models:
@@ -86,14 +86,16 @@ models:
     dropout: [0.6]
     K: [2, 3, 7]
   SimpleShallowNet:
-    dropout: [0.3, 0.5, 0.7]
-    in_channels: [22]
-    num_kernels: [20, 30, 40, 50]
-    kernel_size: [15, 20, 25, 30, 50]
-    pool_size: [15, 30, 45, 75]
-  SimpleConformer:
+    dropout: [0.4, 0.5, 0.6]
     in_channels: [22]
     num_kernels: [40]
+    kernel_size: [15, 25, 35]
+    pool_size: [30, 45, 75]
+  SimpleConformer:
+    in_channels: [22]
+    num_kernels: [30, 40, 50]
+    nhead: [2, 4]
+    pool_size: [30, 45, 75]
     dropout: [0.5]
 datasets:
   BCI_2A_CONTINUOUS:
