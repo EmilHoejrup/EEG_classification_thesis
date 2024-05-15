@@ -9,7 +9,7 @@ models_to_train: [
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
     "SimpleShallowNet",
-    "SimpleConformer",
+    # "SimpleConformer",
   ]
 dataset_list: [
     "BCI_2A_CONTINUOUS",
@@ -28,8 +28,8 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "SimpleConformer + shallownet"
-  run_name: "First implementation"
+  project_name: "SimpleShallowNet modifications"
+  run_name: "Mean pooling"
 
 models:
   EEGConformer:
@@ -86,11 +86,11 @@ models:
     dropout: [0.6]
     K: [2, 3, 7]
   SimpleShallowNet:
-    dropout: [0.4, 0.5, 0.6]
+    dropout: [0.5]
     in_channels: [22]
     num_kernels: [40]
-    kernel_size: [15, 25, 35]
-    pool_size: [30, 45, 75]
+    kernel_size: [25]
+    pool_size: [75]
   SimpleConformer:
     in_channels: [22]
     num_kernels: [30, 40, 50]
