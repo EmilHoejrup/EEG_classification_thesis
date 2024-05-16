@@ -17,14 +17,21 @@ with open(CONFIG_FILE, 'r') as file:
 from support.utils import *
 from braindecode.datautil import load_concat_dataset
 
-X_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'X.npy.gz'
-Y_HIM_OR_HER = DATA_DIR / 'him-or-her' / 'Y.p'
 BCI_IV_2B_DIR = DATA_DIR / 'BCI_IV_2B'
-X_BCI_IV_2B = BCI_IV_2B_DIR / 'X.npy.gz'
-Y_BCI_IV_2B = BCI_IV_2B_DIR / 'Y.p'
+BCI_2B_TRAIN = BCI_IV_2B_DIR / 'train'
+X_BCI_2B_TRAIN = BCI_2B_TRAIN / 'X.npy.gz'
+Y_BCI_2B_TRAIN = BCI_2B_TRAIN / 'Y.p'
+BCI_2B_TEST = BCI_IV_2B_DIR / 'test'
+X_BCI_2B_TEST = BCI_2B_TEST / 'X.npy.gz'
+Y_BCI_2B_TEST = BCI_2B_TEST / 'Y.p'
+
 BCI_IV_2A_DIR = DATA_DIR / 'BCI_IV_2A'
-X_BCI_IV_2A = BCI_IV_2A_DIR / 'X.npy.gz'
-Y_BCI_IV_2A = BCI_IV_2A_DIR / 'Y.p'
+BCI_2A_TRAIN = BCI_IV_2A_DIR / 'train'
+X_BCI_2A_TRAIN = BCI_2A_TRAIN / 'X.npy.gz'
+Y_BCI_2A_TRAIN = BCI_2A_TRAIN / 'Y.p'
+BCI_2A_TEST = BCI_IV_2A_DIR / 'test'
+X_BCI_2A_TEST = BCI_2A_TEST / 'X.npy.gz'
+Y_BCI_2A_TEST = BCI_2A_TEST / 'Y.p'
 
 
 def read_X_and_y(x_file, y_file):
@@ -40,41 +47,44 @@ def fetch_data(data_dir):
     if data_dir == BCI_IV_2A_DIR:
         if not BCI_IV_2A_DIR.exists():
             fetch_BCI_IV_2A()
-        X, Y = read_X_and_y(X_BCI_IV_2A, Y_BCI_IV_2A)
+        X_train, Y_train = read_X_and_y(X_BCI_2A_TRAIN, Y_BCI_2A_TRAIN)
+        X_test, Y_test = read_X_and_y(X_BCI_2A_TEST, Y_BCI_2A_TEST)
+
     elif data_dir == BCI_IV_2B_DIR:
         if not BCI_IV_2B_DIR.exists():
             fetch_BNCI2014_001()
-        X, Y = read_X_and_y(X_BCI_IV_2B, Y_BCI_IV_2B)
-    return X, Y
+        X_train, Y_train = read_X_and_y(X_BCI_2B_TRAIN, Y_BCI_2B_TRAIN)
+        X_test, Y_test = read_X_and_y(X_BCI_2B_TEST, Y_BCI_2B_TEST)
+    return X_train, Y_train, X_test, Y_test
 
 
 class CONTINUOUS_DATASET(Dataset):
-    def __init__(self, data_dir, train=True, val=False, val_ratio=0.2, test_ratio=0.1, random_state=42):
-        self.X, self.Y = fetch_data(data_dir)
+    def __init__(self, data_dir, train=True, val=False, test=False):
+        self.X, self.Y, self.X_test, self.Y_test = fetch_data(
+            data_dir)
 
         self.X = self.X.to(torch.float32)
-        _, _, timepoints = self.X.shape
+        self.X_test = self.X_test.to(torch.float32)
         baseline_start = 0
         baseline_end = 125
         baseline_mean = torch.mean(
             self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
         self.X = self.X - baseline_mean
-        # self.X = F.max_pool1d(self.X, 3, 2)
+        self.X_test = self.X_test - baseline_mean
 
-        # Splitting into train, validation, and test sets
-        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
-            self.X, self.Y, test_size=test_ratio, random_state=random_state)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
-
+            self.X, self.Y, test_size=0.2, random_state=42)
         self.train = train
         self.val = val
+        self.test = test
 
     def get_X_shape(self):
         if self.train:
             return self.X_train.shape
+        elif self.val:
+            return self.X_val.shape
         else:
-            return self.X_val.shape if self.val else self.X_test.shape
+            return self.X_test.shape
 
     def __len__(self):
         if self.train:
@@ -94,13 +104,13 @@ class CONTINUOUS_DATASET(Dataset):
 
 
 class BCI_2A_CONTINUOUS(CONTINUOUS_DATASET):
-    def __init__(self, train=True, val=False):
-        super().__init__(BCI_IV_2A_DIR, train)
+    def __init__(self, train=True, val=False, test=False):
+        super().__init__(BCI_IV_2A_DIR, train, val, test)
 
 
 class BCI_2B_CONTINUOUS(CONTINUOUS_DATASET):
-    def __init__(self, train=True, val=False):
-        super().__init__(BCI_IV_2B_DIR, train)
+    def __init__(self, train=True, val=False, test=False):
+        super().__init__(BCI_IV_2B_DIR, train, val, test)
 
 
 class PERMUTATION_DATASET(Dataset):

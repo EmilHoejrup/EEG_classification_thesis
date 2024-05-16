@@ -28,44 +28,71 @@ from sklearn.preprocessing import LabelEncoder
 # Y_BNCI2014_002 = BNCI2014_002_DIR / 'Y.p'
 
 BCI_IV_2B_DIR = DATA_DIR / 'BCI_IV_2B'
-X_BCI_IV_2B = BCI_IV_2B_DIR / 'X.npy.gz'
-Y_BCI_IV_2B = BCI_IV_2B_DIR / 'Y.p'
+BCI_2B_TRAIN = BCI_IV_2B_DIR / 'train'
+X_BCI_2B_TRAIN = BCI_2B_TRAIN / 'X.npy.gz'
+Y_BCI_2B_TRAIN = BCI_2B_TRAIN / 'Y.p'
+BCI_2B_TEST = BCI_IV_2B_DIR / 'test'
+X_BCI_2B_TEST = BCI_2B_TEST / 'X.npy.gz'
+Y_BCI_2B_TEST = BCI_2B_TEST / 'Y.p'
+
 BCI_IV_2A_DIR = DATA_DIR / 'BCI_IV_2A'
-X_BCI_IV_2A = BCI_IV_2A_DIR / 'X.npy.gz'
-Y_BCI_IV_2A = BCI_IV_2A_DIR / 'Y.p'
+BCI_2A_TRAIN = BCI_IV_2A_DIR / 'train'
+X_BCI_2A_TRAIN = BCI_2A_TRAIN / 'X.npy.gz'
+Y_BCI_2A_TRAIN = BCI_2A_TRAIN / 'Y.p'
+BCI_2A_TEST = BCI_IV_2A_DIR / 'test'
+X_BCI_2A_TEST = BCI_2A_TEST / 'X.npy.gz'
+Y_BCI_2A_TEST = BCI_2A_TEST / 'Y.p'
+
 
 has_gpu = torch.cuda.is_available()
 device = 'mps' if getattr(
     torch, 'torch.backends.mps.is_built()', False) else 'cuda' if has_gpu else 'cpu'
+# %%
 
 
 def fetch_BNCI2014_001():
     dataset = BNCI2014_001()
-    dataset.subject_list = [1, 2, 3]
+    subject_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    dataset.subject_list = subject_list
     paradigm = LeftRightImagery()
-    X, y, meta = paradigm.get_data(dataset=dataset, subjects=[1, 2, 3])
+    X, y, meta = paradigm.get_data(dataset=dataset, subjects=subject_list)
     encoder = LabelEncoder()
     y = encoder.fit_transform(y)
+    X_train = X[meta['session'] == '0train']
+    y_train = y[meta['session'] == '0train']
+    X_test = X[meta['session'] == '1test']
+    y_test = y[meta['session'] == '1test']
     # Save data
-    BCI_IV_2B_DIR.mkdir(parents=True, exist_ok=True)
-    with gzip.open(X_BCI_IV_2B, 'wb') as f:
-        np.save(f, X)
-    with open(Y_BCI_IV_2B, 'wb') as f:
-        pickle.dump(y, f)
+    BCI_2B_TRAIN.mkdir(parents=True, exist_ok=True)
+    with gzip.open(X_BCI_2B_TRAIN, 'wb') as f:
+        np.save(f, X_train)
+    with open(Y_BCI_2B_TRAIN, 'wb') as f:
+        pickle.dump(y_train, f)
+    BCI_2B_TEST.mkdir(parents=True, exist_ok=True)
+    with gzip.open(X_BCI_2B_TEST, 'wb') as f:
+        np.save(f, X_test)
+    with open(Y_BCI_2B_TEST, 'wb') as f:
+        pickle.dump(y_test, f)
 
 
 def fetch_BCI_IV_2A():
     dataset = BNCI2014_001()
-    dataset.subject_list = [1, 2, 3]
+    subject_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    dataset.subject_list = subject_list
     paradigm = MotorImagery()
-    X, y, meta = paradigm.get_data(dataset=dataset, subjects=[1, 2, 3])
+    X, y, meta = paradigm.get_data(dataset=dataset, subjects=subject_list)
     encoder = LabelEncoder()
     y = encoder.fit_transform(y)
     # Save data
-    BCI_IV_2A_DIR.mkdir(parents=True, exist_ok=True)
-    with gzip.open(X_BCI_IV_2A, 'wb') as f:
+    BCI_2A_TRAIN.mkdir(parents=True, exist_ok=True)
+    with gzip.open(X_BCI_2A_TRAIN, 'wb') as f:
         np.save(f, X)
-    with open(Y_BCI_IV_2A, 'wb') as f:
+    with open(Y_BCI_2A_TRAIN, 'wb') as f:
+        pickle.dump(y, f)
+    BCI_2A_TEST.mkdir(parents=True, exist_ok=True)
+    with gzip.open(X_BCI_2A_TEST, 'wb') as f:
+        np.save(f, X)
+    with open(Y_BCI_2A_TEST, 'wb') as f:
         pickle.dump(y, f)
 
 # %%
@@ -116,20 +143,3 @@ def test_metrics(model, test_dataloader):
         weighted_recall = recall_score(
             y.cpu().numpy(), predicted.cpu().numpy())
         return test_acc, weighted_kappa, weighted_precision, weighted_recall
-    kappa = cohen_kappa_score(y.cpu().numpy(), predicted.cpu().numpy())
-    precision = precision_score(y.cpu().numpy(), predicted.cpu().numpy())
-    recall = recall_score(y.cpu().numpy(), predicted.cpu().numpy())
-    return test_acc, kappa, precision, recall
-
-
-# def f1_score(y_true, y_pred):
-#     tp = sum([1 for i in range(len(y_true))
-#              if y_true[i] == 1 and y_pred[i] == 1])
-#     fp = sum([1 for i in range(len(y_true))
-#              if y_true[i] == 0 and y_pred[i] == 1])
-#     fn = sum([1 for i in range(len(y_true))
-#              if y_true[i] == 1 and y_pred[i] == 0])
-#     precision = tp / (tp + fp)
-#     recall = tp / (tp + fn)
-#     f1 = 2 * (precision * recall) / (precision + recall)
-#     return f1

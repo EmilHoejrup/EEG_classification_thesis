@@ -35,7 +35,7 @@ def run():
         if dataset_params == None:
             train_dataset = dataset(train=True)
             val_dataset = dataset(train=False, val=True)
-            test_dataset = dataset(train=False, val=False)
+            test_dataset = dataset(train=False, val=False, test=True)
             train_dataloader = DataLoader(
                 dataset=train_dataset, batch_size=train_params['batch_size'], shuffle=True)
             val_dataloader = DataLoader(
@@ -50,7 +50,8 @@ def run():
             for combination in param_combinations:
                 train_dataset = dataset(*combination, train=True)
                 val_dataset = dataset(*combination, train=False, val=True)
-                test_dataset = dataset(*combination, train=False, val=False)
+                test_dataset = dataset(
+                    *combination, train=False, val=False, test=True)
                 train_dataloader = DataLoader(
                     dataset=train_dataset, batch_size=train_params['batch_size'], shuffle=True)
                 val_dataloader = DataLoader(
@@ -71,7 +72,7 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
         param_combinations = product(*model_params.values())
 
         for combination in param_combinations:
-            num_classes = len(np.unique(train_dataloader.dataset.Y))
+            num_classes = len(np.unique(train_dataloader.dataset.Y_train))
             param_keys = model_params.keys()
             args = dict(zip(param_keys, combination))
             if model_type == 'EEGConformer':
@@ -151,13 +152,12 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, timepoints, 
                     ['epochs'], print_metrics=False)
 
         if configs['test']:
-            test_accuracy, kappa, precision, recall, f1_score = test_metrics(
+            test_accuracy, kappa, precision, recall = test_metrics(
                 model, test_dataloader)
             print(f"Test accuracy: {test_accuracy}")
             print(f"Kappa: {kappa}")
             print(f"Precision: {precision}")
             print(f"Recall: {recall}")
-            print(f"F1 Score: {f1_score}")
 
 
 # %%

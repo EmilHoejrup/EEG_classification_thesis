@@ -7,7 +7,7 @@ models_to_train: [
     # "ConformerCopy",
     # "GraphFormer",
     # "SimpleGraphFormer",
-    # "ShallowFBCSPNet",
+    "ShallowFBCSPNet",
     "SimpleShallowNet",
     # "SimpleConformer",
   ]
@@ -28,8 +28,8 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "SimpleShallowNet modifications"
-  run_name: "Batch norm"
+  project_name: "ALL SUBJECTS"
+  run_name: "First Run"
 
 models:
   EEGConformer:
