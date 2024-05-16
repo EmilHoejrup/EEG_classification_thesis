@@ -18,13 +18,11 @@ class SimpleShallowNet(nn.Module):
             in_channels, num_kernels, (1, kernel_size))
         self.pool = nn.MaxPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
-        self.batchnorm = nn.BatchNorm2d(num_kernels)
         self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=2)
         x = F.elu(self.spatio_temporal(x))
-        x = self.batchnorm(x)
         x = self.pool(x)
         x = x.view(x.size(0), -1)
         x = self.dropout(x)
