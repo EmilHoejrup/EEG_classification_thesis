@@ -86,7 +86,7 @@ class SimpleShallowNet(nn.Module):
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
-        self.pool = nn.MaxPool2d((1, pool_size))
+        self.pool = nn.AvgPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
         self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
 
