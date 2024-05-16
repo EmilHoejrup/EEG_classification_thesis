@@ -45,7 +45,7 @@ transforms = [
 ]
 
 # Transform the data
-preprocess(dataset, transforms, n_jobs=1)
+preprocess(dataset, transforms, n_jobs=-1)
 
 trial_start_offset_seconds = -0.5
 # Extract sampling frequency, check that they are same in all datasets
@@ -132,7 +132,7 @@ def run(model):
     lr = 0.0001
     weight_decay = 0
     batch_size = 64
-    n_epochs = 2700
+    n_epochs = 900
 
     # Define a method for training one epoch
 
