@@ -6,7 +6,7 @@ models_to_train: [
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
-    "SimpleGraphFormer",
+    # "SimpleGraphFormer",
     "ShallowFBCSPNet",
     "SimpleShallowNet",
     "SimpleConformer",
