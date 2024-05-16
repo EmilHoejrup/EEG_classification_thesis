@@ -2,22 +2,22 @@ models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
     # "EEGConformer",
-    # "PPModel",
+    "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
     # "SimpleGraphFormer",
-    "ShallowFBCSPNet",
-    "SimpleShallowNet",
+    # "ShallowFBCSPNet",
+    # "SimpleShallowNet",
     # "SimpleConformer",
   ]
 dataset_list: [
-    "BCI_2A_CONTINUOUS",
-    "BCI_2B_CONTINUOUS",
-    # "BCI_2B_PERMUTED",
-    # "BCI_2A_PERMUTED",
-    # "SIMPLE_BCI_2A_PERMUTED",
-    # "SIMPLE_BCI_2B_PERMUTED",
+    # "BCI_2A_CONTINUOUS",
+    # "BCI_2B_CONTINUOUS",
+    "BCI_2B_PERMUTED",
+    "BCI_2A_PERMUTED",
+    "SIMPLE_BCI_2A_PERMUTED",
+    "SIMPLE_BCI_2B_PERMUTED",
   ]
 test: True
 
@@ -29,7 +29,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "ALL SUBJECTS"
-  run_name: "First Run"
+  run_name: "First Run PP models"
 
 models:
   EEGConformer:
