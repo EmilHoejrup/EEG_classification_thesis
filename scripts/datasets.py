@@ -65,12 +65,17 @@ class CONTINUOUS_DATASET(Dataset):
 
         self.X = self.X.to(torch.float32)
         self.X_test = self.X_test.to(torch.float32)
-        baseline_start = 0
-        baseline_end = 125
-        baseline_mean = torch.mean(
-            self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
-        self.X = self.X - baseline_mean
-        self.X_test = self.X_test - baseline_mean
+        # baseline_start = 0
+        # baseline_end = 125
+        # baseline_mean = torch.mean(
+        #     self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
+        # self.X = self.X - baseline_mean
+        # self.X_test = self.X_test - baseline_mean
+        # standardise
+        target_mean = torch.mean(self.X, dim=(0, 2), keepdim=True)
+        target_std = torch.std(self.X, dim=(0, 2), keepdim=True)
+        self.X = (self.X - target_mean) / target_std
+        self.X_test = (self.X_test - target_mean) / target_std
 
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
             self.X, self.Y, test_size=0.2, random_state=42)
@@ -114,26 +119,24 @@ class BCI_2B_CONTINUOUS(CONTINUOUS_DATASET):
 
 
 class PERMUTATION_DATASET(Dataset):
-    def __init__(self, window_size, stride, data_dir, train=True, val=False, val_ratio=0.2, test_ratio=0.1, threshold=0.001, random_state=42):
-        self.X, self.Y = fetch_data(data_dir)
+    def __init__(self, window_size, stride, data_dir, train=True, val=False, test=False):
+        self.X, self.Y, self.X_test, self.Y_test = fetch_data(
+            data_dir)
 
         self.train = train
+        self.val = val
+        self.test = test
 
         self.window_size = window_size
         self.stride = stride
-        self.threshold = threshold
-        self.val = val
-
-        _, _, timepoints = self.X.shape
 
         self.X = F.max_pool1d(self.X, 3, 3)
         self.X = self._discretize(self.X)
+        self.X_test = F.max_pool1d(self.X_test, 3, 3)
+        self.X_test = self._discretize(self.X_test)
 
-        # Splitting into train, validation, and test sets
-        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
-            self.X, self.Y, test_size=test_ratio, random_state=random_state)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
+            self.X, self.Y, test_size=0.2, random_state=42)
 
     def get_X_shape(self):
         if self.train:
@@ -147,7 +150,6 @@ class PERMUTATION_DATASET(Dataset):
         return len(self.permutations)
 
     def _discretize(self, X):
-        # self.p_length = configs['BNCI2014_001']['window_size']
         values = list(range(self.window_size))
 
         self.permutations = [list(perm)
@@ -196,32 +198,33 @@ class PERMUTATION_DATASET(Dataset):
 
 
 class BCI_2A_PERMUTED(PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
-        super().__init__(window_size, stride, BCI_IV_2A_DIR, train, threshold)
+    def __init__(self, window_size, stride, train=True, val=False, test=False):
+        super().__init__(window_size, stride, BCI_IV_2A_DIR, train, val, test)
 
 
 class BCI_2B_PERMUTED(PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
-        super().__init__(window_size, stride, BCI_IV_2B_DIR, train, threshold)
+    def __init__(self, window_size, stride, train=True, val=False, test=False):
+        super().__init__(window_size, stride, BCI_IV_2B_DIR, train, val, test)
 
 
 class SIMPLE_PERMUTATION_DATASET(Dataset):
-    def __init__(self, window_size, stride, data_dir, train=True, val=False, val_ratio=0.2, test_ratio=0.1, threshold=0.001, random_state=42):
-        self.X, self.Y = fetch_data(data_dir)
+    def __init__(self, window_size, stride, data_dir, train=True, val=False, test=False):
+        self.X, self.Y, self.X_test, self.Y_test = fetch_data(
+            data_dir)
+
         self.train = train
         self.val = val
+        self.test = test
         self.window_size = window_size
         self.stride = stride
-        self.threshold = threshold
 
         self.X = F.max_pool1d(self.X, 3, 3)
         self.X = self._discretize(self.X)
+        self.X_test = F.max_pool1d(self.X_test, 3, 3)
+        self.X_test = self._discretize(self.X_test)
 
-# Splitting into train, validation, and test sets
-        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(
-            self.X, self.Y, test_size=test_ratio, random_state=random_state)
         self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(
-            self.X_train, self.Y_train, test_size=val_ratio/(1-test_ratio), random_state=random_state)
+            self.X, self.Y, test_size=0.2, random_state=42)
 
     def get_X_shape(self):
         if self.train:
@@ -235,7 +238,6 @@ class SIMPLE_PERMUTATION_DATASET(Dataset):
         return len(self.permutations)
 
     def _discretize(self, X):
-        # self.p_length = configs['BNCI2014_001']['window_size']
         values = [0, 1]
         self.permutations = [list(perm)
                              for perm in product(values, repeat=self.window_size)]
@@ -286,10 +288,10 @@ class SIMPLE_PERMUTATION_DATASET(Dataset):
 
 
 class SIMPLE_BCI_2A_PERMUTED(SIMPLE_PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
-        super().__init__(window_size, stride, BCI_IV_2A_DIR, train, threshold)
+    def __init__(self, window_size, stride, train=True, val=False, test=False):
+        super().__init__(window_size, stride, BCI_IV_2A_DIR, train, val, test)
 
 
 class SIMPLE_BCI_2B_PERMUTED(SIMPLE_PERMUTATION_DATASET):
-    def __init__(self, window_size, stride, train=True, val=False, threshold=0.001, ):
-        super().__init__(window_size, stride, BCI_IV_2B_DIR, train, threshold)
+    def __init__(self, window_size, stride, train=True, val=False, test=False):
+        super().__init__(window_size, stride, BCI_IV_2B_DIR, train, val, test)
