@@ -83,17 +83,21 @@ def fetch_BCI_IV_2A():
     X, y, meta = paradigm.get_data(dataset=dataset, subjects=subject_list)
     encoder = LabelEncoder()
     y = encoder.fit_transform(y)
+    X_train = X[meta['session'] == '0train']
+    y_train = y[meta['session'] == '0train']
+    X_test = X[meta['session'] == '1test']
+    y_test = y[meta['session'] == '1test']
     # Save data
     BCI_2A_TRAIN.mkdir(parents=True, exist_ok=True)
     with gzip.open(X_BCI_2A_TRAIN, 'wb') as f:
-        np.save(f, X)
+        np.save(f, X_train)
     with open(Y_BCI_2A_TRAIN, 'wb') as f:
-        pickle.dump(y, f)
+        pickle.dump(y_train, f)
     BCI_2A_TEST.mkdir(parents=True, exist_ok=True)
     with gzip.open(X_BCI_2A_TEST, 'wb') as f:
-        np.save(f, X)
+        np.save(f, X_test)
     with open(Y_BCI_2A_TEST, 'wb') as f:
-        pickle.dump(y, f)
+        pickle.dump(y_test, f)
 
 # %%
 

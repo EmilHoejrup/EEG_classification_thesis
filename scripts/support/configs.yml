@@ -7,13 +7,13 @@ models_to_train: [
     # "ConformerCopy",
     # "GraphFormer",
     "SimpleGraphFormer",
-    # "ShallowFBCSPNet",
-    # "SimpleShallowNet",
+    "ShallowFBCSPNet",
+    "SimpleShallowNet",
     "SimpleConformer",
   ]
 dataset_list: [
-    "BCI_2B_CONTINUOUS",
     "BCI_2A_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
     # "SIMPLE_BCI_2A_PERMUTED",
@@ -28,8 +28,8 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "ALL SUBJECTS"
-  run_name: "Run confromers + graphformer"
+  project_name: "ALL SUBJECTS 2.0"
+  run_name: "Bug fixed"
 
 models:
   EEGConformer:
