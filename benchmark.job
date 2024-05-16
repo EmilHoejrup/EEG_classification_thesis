@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#SBATCH --job-name=run          
+#SBATCH --output=job.%j.out     
+#SBATCH --cpus-per-task=1      
+#SBATCH --time=12:00:00
+#SBATCH --partition=brown
+#SBATCH --gres=gpu
+
+
+module load Anaconda3
+source activate thesis
+export WANDB_API_KEY=50dccae57af0af4daee361e9f93de1c713d34dd4
+python braindecode_benchmark.py
