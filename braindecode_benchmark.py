@@ -112,7 +112,7 @@ shallowfbcspnet = ShallowFBCSPNet(
 simpleshallow = SimpleShallowNet(n_channels, n_classes, timepoints=1125)
 # Display torchinfo table describing the model
 
-# models.append(shallowfbcspnet)
+models.append(shallowfbcspnet)
 models.append(simpleshallow)
 
 final_metrics = []
@@ -132,7 +132,7 @@ def run(model):
     lr = 0.0001
     weight_decay = 0
     batch_size = 64
-    n_epochs = 900
+    n_epochs = 1800
 
     # Define a method for training one epoch
 
