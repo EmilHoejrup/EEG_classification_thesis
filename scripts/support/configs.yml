@@ -22,7 +22,7 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 900
+  epochs: 1800
   batch_size: 64
   lr: 0.0001
   classes: 4
