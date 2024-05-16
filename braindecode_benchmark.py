@@ -18,9 +18,9 @@ import torch.nn.functional as F
 import numpy as np
 from braindecode.datasets import MOABBDataset
 
-subject_ids = [1, 2, 3]
+subject_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 dataset = MOABBDataset(dataset_name="BNCI2014_001", subject_ids=subject_ids)
-
+# %%
 
 low_cut_hz = 4.0  # low cut frequency for filtering
 high_cut_hz = 38.0  # high cut frequency for filtering
@@ -112,7 +112,7 @@ shallowfbcspnet = ShallowFBCSPNet(
 simpleshallow = SimpleShallowNet(n_channels, n_classes, timepoints=1125)
 # Display torchinfo table describing the model
 
-# models.append(shallowfbcspnet)
+models.append(shallowfbcspnet)
 models.append(simpleshallow)
 
 final_metrics = []
@@ -132,7 +132,7 @@ def run(model):
     lr = 0.0001
     weight_decay = 0
     batch_size = 64
-    n_epochs = 2700
+    n_epochs = 900
 
     # Define a method for training one epoch
 
