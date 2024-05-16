@@ -1,15 +1,15 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    # "EEGConformer",
+    "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
-    # "SimpleGraphFormer",
-    "ShallowFBCSPNet",
-    "SimpleShallowNet",
-    # "SimpleConformer",
+    "SimpleGraphFormer",
+    # "ShallowFBCSPNet",
+    # "SimpleShallowNet",
+    "SimpleConformer",
   ]
 dataset_list: [
     "BCI_2B_CONTINUOUS",
@@ -29,7 +29,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "ALL SUBJECTS"
-  run_name: "Standardisation instead of baseline"
+  run_name: "Run confromers + graphformer"
 
 models:
   EEGConformer:
@@ -93,9 +93,9 @@ models:
     pool_size: [75]
   SimpleConformer:
     in_channels: [22]
-    num_kernels: [30, 40, 50]
+    num_kernels: [40]
     nhead: [2, 4]
-    pool_size: [30, 45, 75]
+    pool_size: [75]
     dropout: [0.5]
 datasets:
   BCI_2A_CONTINUOUS:
