@@ -1,14 +1,14 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    "EEGConformer",
+    # "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "ConformerCopy",
     # "GraphFormer",
     # "SimpleGraphFormer",
-    "ShallowFBCSPNet",
-    "SimpleShallowNet",
+    # "ShallowFBCSPNet",
+    # "SimpleShallowNet",
     "SimpleConformer",
   ]
 dataset_list: [
@@ -22,14 +22,14 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 1800
+  epochs: 900
   batch_size: 64
   lr: 0.0001
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "1800 epochs"
+  run_name: "Local Run SimpleConformer"
 
 models:
   EEGConformer:
