@@ -1,12 +1,12 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    "EEGConformer",
+    # "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "GraphFormer",
     # "SimpleGraphFormer",
-    "ShallowFBCSPNet",
+    # "ShallowFBCSPNet",
     "SimpleShallowNet",
     # "ConformerCopy",
     # "SimpleConformer",
@@ -63,11 +63,11 @@ models:
     n_chans: [22]
     final_conv_length: ["auto"]
   ConformerCopy:
-    nhead: [2]
-    depth: [2]
+    nhead: [10]
+    depth: [6]
     num_kernels: [40]
-    expansion: [4]
-    dropout: [0.7]
+    expansion: [6]
+    dropout: [0.5]
   SimpleGraphFormer:
     nhead: [2]
     depth: [2]
@@ -86,7 +86,7 @@ models:
     dropout: [0.6]
     K: [2, 3, 7]
   SimpleShallowNet:
-    dropout: [0.5]
+    dropout: [0.4]
     in_channels: [22]
     num_kernels: [40]
     kernel_size: [25]
@@ -94,7 +94,7 @@ models:
   SimpleConformer:
     in_channels: [22]
     num_kernels: [40]
-    nhead: [2, 4]
+    nhead: [4]
     pool_size: [75]
     dropout: [0.5]
 datasets:

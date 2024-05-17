@@ -68,10 +68,10 @@ class ConformerCopy(nn.Module):
         self.pool = nn.AvgPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
-
-        self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
         self.transformer = _TransformerEncoder(
             depth, num_kernels, nhead, expansion, dropout)
+        self.classification_head = ClassificationHead(
+            num_kernels*maxpool_out, num_classes)
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=2)
@@ -82,8 +82,10 @@ class ConformerCopy(nn.Module):
         x = x.squeeze(dim=2)
         x = rearrange(x, 'b c t -> b t c')
         x = self.transformer(x)
-        x = x.contiguous().view(x.size(0), -1)
-        x = self.fc(x)
+        # print(f"Transformer shape: {x.shape}")
+        # x = x.contiguous().view(x.size(0), -1)
+        # print(f"Flattened shape: {x.shape}")
+        x = self.classification_head(x)
         return x
 
 
