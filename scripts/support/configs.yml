@@ -1,15 +1,15 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    # "EEGConformer",
+    "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
-    # "ConformerCopy",
     # "GraphFormer",
     # "SimpleGraphFormer",
     "ShallowFBCSPNet",
     "SimpleShallowNet",
-    "SimpleConformer",
+    # "ConformerCopy",
+    # "SimpleConformer",
   ]
 dataset_list: [
     # "BCI_2B_CONTINUOUS",
