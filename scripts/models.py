@@ -16,7 +16,7 @@ class SimpleShallowNet(nn.Module):
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
-        self.pool = nn.MaxPool2d((1, pool_size))
+        self.pool = nn.AvgPool2d((1, pool_size))
         self.batch_norm = nn.BatchNorm2d(num_kernels)
         self.dropout = nn.Dropout(dropout)
         self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
@@ -44,6 +44,34 @@ class SimpleConformer(nn.Module):
         self.transformer = nn.TransformerEncoderLayer(
             d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout)
         self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
+
+    def forward(self, x):
+        x = torch.unsqueeze(x, dim=2)
+        x = F.elu(self.spatio_temporal(x))
+        x = self.batch_norm(x)
+        x = self.pool(x)
+        x = self.dropout(x)
+        x = x.squeeze(dim=2)
+        x = rearrange(x, 'b c t -> b t c')
+        x = self.transformer(x)
+        x = x.contiguous().view(x.size(0), -1)
+        x = self.fc(x)
+        return x
+
+
+class ConformerCopy(nn.Module):
+    def __init__(self, timepoints, nhead=2, num_classes=2, depth=2, pool_size=75, n_channels=22, num_kernels=40, kernel_size=25, expansion=4, dropout=0.5):
+        super(ConformerCopy, self).__init__()
+        maxpool_out = (timepoints - kernel_size + 1) // pool_size
+        self.spatio_temporal = nn.Conv2d(
+            n_channels, num_kernels, (1, kernel_size))
+        self.pool = nn.AvgPool2d((1, pool_size))
+        self.dropout = nn.Dropout(dropout)
+        self.batch_norm = nn.BatchNorm2d(num_kernels)
+
+        self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
+        self.transformer = _TransformerEncoder(
+            depth, num_kernels, nhead, expansion, dropout)
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=2)

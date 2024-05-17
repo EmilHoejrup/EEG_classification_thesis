@@ -1,15 +1,15 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    "EEGConformer",
+    # "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
-    # "ConformerCopy",
+    "ConformerCopy",
     # "GraphFormer",
     # "SimpleGraphFormer",
-    "ShallowFBCSPNet",
-    "SimpleShallowNet",
-    "SimpleConformer",
+    # "ShallowFBCSPNet",
+    # "SimpleShallowNet",
+    # "SimpleConformer",
   ]
 dataset_list: [
     "BCI_2B_CONTINUOUS",
@@ -29,7 +29,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "Local Run SimpleConformer"
+  run_name: "Local Run ConformerCopy"
 
 models:
   EEGConformer:
@@ -65,7 +65,7 @@ models:
   ConformerCopy:
     nhead: [2]
     depth: [2]
-    emb_size: [20]
+    num_kernels: [40]
     expansion: [4]
     dropout: [0.7]
   SimpleGraphFormer:

@@ -84,9 +84,9 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             elif model_type == 'TransformerOnly':
                 model = TransformerOnly(
                     **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
-            elif model_type == 'EEGTransformerEmb':
-                model = EEGTransformerEmb(
-                    **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
+            elif model_type == 'ConformerCopy':
+                model = ConformerCopy(
+                    **args, num_classes=num_classes, timepoints=timepoints)
             elif model_type == 'GraphFormer':
                 model = GraphFormer(
                     **args, num_classes=num_classes, seq_len=timepoints)
@@ -105,7 +105,10 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             elif model_type == 'SimpleConformer':
                 model = SimpleConformer(
                     **args, num_classes=num_classes, timepoints=timepoints)
-
+            # print(model)
+            # # print number of trainable parameters
+            # print(
+            #     f"Number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
             train(model, train_dataloader,
                   val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs, args=args)
 
