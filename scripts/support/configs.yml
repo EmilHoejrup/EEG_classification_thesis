@@ -28,8 +28,8 @@ train_params:
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
-  project_name: "ALL SUBJECTS 2.0"
-  run_name: "Bug fixed"
+  project_name: "FINAL REPORT ALL SUBJECTS"
+  run_name: "1800 epochs"
 
 models:
   EEGConformer:
