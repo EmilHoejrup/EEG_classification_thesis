@@ -77,7 +77,7 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             args = dict(zip(param_keys, combination))
             if model_type == 'EEGConformer':
                 model = EEGConformer(
-                    **args, n_outputs=num_classes, n_times=timepoints)
+                    **args, n_outputs=num_classes, n_times=timepoints, sfreq=250)
             elif model_type == 'PPModel':
                 model = PPModel(
                     **args, seq_len=timepoints, num_classes=num_classes, vocab_size=vocab_size)
@@ -98,7 +98,7 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
                     **args, num_classes=num_classes, seq_len=timepoints)
             elif model_type == 'ShallowFBCSPNet':
                 model = ShallowFBCSPNet(
-                    **args, n_classes=num_classes, input_window_samples=timepoints)
+                    **args, n_classes=num_classes, input_window_samples=timepoints, sfreq=250)
             elif model_type == 'SimpleShallowNet':
                 model = SimpleShallowNet(
                     **args, num_classes=num_classes, timepoints=timepoints)
