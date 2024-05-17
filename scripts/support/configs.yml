@@ -1,18 +1,18 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    # "EEGConformer",
+    "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "GraphFormer",
     # "SimpleGraphFormer",
-    # "ShallowFBCSPNet",
+    "ShallowFBCSPNet",
     "SimpleShallowNet",
-    # "ConformerCopy",
+    "ConformerCopy",
     # "SimpleConformer",
   ]
 dataset_list: [
-    # "BCI_2B_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
     "BCI_2A_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
@@ -22,14 +22,14 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 1200
+  epochs: 900
   batch_size: 64
-  lr: 0.0001
+  lr: 0.0002
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "Local Run ConformerCopy"
+  run_name: "lr=0.0002"
 
 models:
   EEGConformer:
