@@ -8,7 +8,7 @@ models_to_train: [
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
     # "SimpleShallowNet",
-    "ConformerCopy",
+    # "ConformerCopy",
     "SimpleConformer",
   ]
 dataset_list: [

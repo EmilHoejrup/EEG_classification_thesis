@@ -43,7 +43,7 @@ class SimpleConformer(nn.Module):
         self.batch_norm = nn.BatchNorm2d(num_kernels)
 
         self.encoder_layers = nn.TransformerEncoderLayer(
-            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout, activation='gelu', batch_first=True)
+            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True)
         self.transformer = nn.TransformerEncoder(
             self.encoder_layers, num_layers=6, norm=nn.LayerNorm(num_kernels))
         hidden1_size = (num_kernels*maxpool_out)//2
@@ -54,14 +54,15 @@ class SimpleConformer(nn.Module):
             nn.Dropout(dropout),
             nn.Linear(hidden1_size, hidden2_size),
             nn.ELU(),
-            nn.Dropout(dropout),
+            nn.Dropout(0.3),
             nn.Linear(hidden2_size, num_classes)
         )
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=2)
-        x = F.elu(self.spatio_temporal(x))
+        x = self.spatio_temporal(x)
         x = self.batch_norm(x)
+        x = F.elu(x)
         x = self.pool(x)
         x = self.dropout(x)
         x = x.squeeze(dim=2)
@@ -83,18 +84,18 @@ class ConformerCopy(nn.Module):
         self.batch_norm = nn.BatchNorm2d(num_kernels)
 
         self.encoder_layers = nn.TransformerEncoderLayer(
-            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout, activation='gelu', batch_first=True)
+            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True)
         self.transformer = nn.TransformerEncoder(
             self.encoder_layers, num_layers=6, norm=nn.LayerNorm(num_kernels))
-        hidden1_size = (num_kernels*maxpool_out)//2
-        hidden2_size = hidden1_size//2
+        hidden1_size = 256
+        hidden2_size = 32
         self.fc = nn.Sequential(
             nn.Linear(num_kernels*maxpool_out, hidden1_size),
             nn.ELU(),
             nn.Dropout(dropout),
             nn.Linear(hidden1_size, hidden2_size),
             nn.ELU(),
-            nn.Dropout(dropout),
+            nn.Dropout(0.3),
             nn.Linear(hidden2_size, num_classes)
         )
 
@@ -108,7 +109,7 @@ class ConformerCopy(nn.Module):
         x = self.pool(x)
         x = self.dropout(x)
         x = x.squeeze(dim=2)
-        x = rearrange(x, 'b c t -> b t c')
+        # x = rearrange(x, 'b c t -> b t c')
         x = self.transformer(x)
         x = x.contiguous().view(x.size(0), -1)
         x = self.fc(x)
