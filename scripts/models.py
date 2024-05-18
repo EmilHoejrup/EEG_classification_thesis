@@ -79,18 +79,18 @@ class ConformerCopy(nn.Module):
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.temporal = nn.Conv2d(1, num_kernels, (1, kernel_size))
         self.spatial = nn.Conv2d(num_kernels, num_kernels, (in_channels, 1))
-        self.pool = nn.AvgPool2d((1, pool_size))
+        self.pool = nn.AvgPool2d((1, pool_size), (1, 15))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
 
         self.encoder_layers = nn.TransformerEncoderLayer(
-            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True)
+            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True, dropout=dropout)
         self.transformer = nn.TransformerEncoder(
             self.encoder_layers, num_layers=6, norm=nn.LayerNorm(num_kernels))
         hidden1_size = 256
         hidden2_size = 32
         self.fc = nn.Sequential(
-            nn.Linear(num_kernels*maxpool_out, hidden1_size),
+            nn.Linear(2440, hidden1_size),
             nn.ELU(),
             nn.Dropout(dropout),
             nn.Linear(hidden1_size, hidden2_size),
