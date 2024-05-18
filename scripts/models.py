@@ -36,8 +36,10 @@ class SimpleConformer(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
         super(SimpleConformer, self).__init__()
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
-        self.spatio_temporal = nn.Conv2d(
-            in_channels, num_kernels, (1, kernel_size))
+        # self.spatio_temporal = nn.Conv2d(
+        #     in_channels, num_kernels, (1, kernel_size))
+        self.temporal = nn.Conv2d(1, num_kernels, (1, kernel_size))
+        self.spatial = nn.Conv2d(num_kernels, num_kernels, (22, 1))
         self.pool = nn.AvgPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
@@ -49,8 +51,11 @@ class SimpleConformer(nn.Module):
         self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
 
     def forward(self, x):
-        x = torch.unsqueeze(x, dim=2)
-        x = F.elu(self.spatio_temporal(x))
+        x = torch.unsqueeze(x, dim=1)
+        # x = F.elu(self.spatio_temporal(x))
+        x = self.temporal(x)
+        x = self.spatial(x)
+        x = F.elu(x)
         x = self.batch_norm(x)
         x = self.pool(x)
         x = self.dropout(x)
