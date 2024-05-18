@@ -8,12 +8,12 @@ models_to_train: [
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
     # "SimpleShallowNet",
-    # "ConformerCopy",
+    "ConformerCopy",
     "SimpleConformer",
   ]
 dataset_list: [
-    # "BCI_2B_CONTINUOUS",
-    "BCI_2A_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
+    # "BCI_2A_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
     # "SIMPLE_BCI_2A_PERMUTED",
@@ -29,7 +29,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "SimpleConformer is conformercopy"
+  run_name: "SimpleConformer + ConformerCopy with new classificationhead"
 
 models:
   EEGConformer:
@@ -63,10 +63,10 @@ models:
     n_chans: [22]
     final_conv_length: ["auto"]
   ConformerCopy:
-    nhead: [10]
-    depth: [6]
+    in_channels: [22]
     num_kernels: [40]
-    expansion: [6]
+    nhead: [10]
+    pool_size: [75]
     dropout: [0.5]
   SimpleGraphFormer:
     nhead: [2]

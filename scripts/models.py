@@ -36,19 +36,67 @@ class SimpleConformer(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
         super(SimpleConformer, self).__init__()
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
-        # self.spatio_temporal = nn.Conv2d(
-        #     in_channels, num_kernels, (1, kernel_size))
-        self.temporal = nn.Conv2d(1, num_kernels, (1, kernel_size))
-        self.spatial = nn.Conv2d(num_kernels, num_kernels, (22, 1))
+        self.spatio_temporal = nn.Conv2d(
+            in_channels, num_kernels, (1, kernel_size))
         self.pool = nn.AvgPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
 
         self.encoder_layers = nn.TransformerEncoderLayer(
-            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout)
+            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout, activation='gelu', batch_first=True)
         self.transformer = nn.TransformerEncoder(
-            self.encoder_layers, num_layers=6)
-        self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
+            self.encoder_layers, num_layers=6, norm=nn.LayerNorm(num_kernels))
+        hidden1_size = (num_kernels*maxpool_out)//2
+        hidden2_size = hidden1_size//2
+        self.fc = nn.Sequential(
+            nn.Linear(num_kernels*maxpool_out, hidden1_size),
+            nn.ELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden1_size, hidden2_size),
+            nn.ELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden2_size, num_classes)
+        )
+
+    def forward(self, x):
+        x = torch.unsqueeze(x, dim=2)
+        x = F.elu(self.spatio_temporal(x))
+        x = self.batch_norm(x)
+        x = self.pool(x)
+        x = self.dropout(x)
+        x = x.squeeze(dim=2)
+        x = rearrange(x, 'b c t -> b t c')
+        x = self.transformer(x)
+        x = x.contiguous().view(x.size(0), -1)
+        x = self.fc(x)
+        return x
+
+
+class ConformerCopy(nn.Module):
+    def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
+        super(ConformerCopy, self).__init__()
+        maxpool_out = (timepoints - kernel_size + 1) // pool_size
+        self.temporal = nn.Conv2d(1, num_kernels, (1, kernel_size))
+        self.spatial = nn.Conv2d(num_kernels, num_kernels, (in_channels, 1))
+        self.pool = nn.AvgPool2d((1, pool_size))
+        self.dropout = nn.Dropout(dropout)
+        self.batch_norm = nn.BatchNorm2d(num_kernels)
+
+        self.encoder_layers = nn.TransformerEncoderLayer(
+            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout, activation='gelu', batch_first=True)
+        self.transformer = nn.TransformerEncoder(
+            self.encoder_layers, num_layers=6, norm=nn.LayerNorm(num_kernels))
+        hidden1_size = (num_kernels*maxpool_out)//2
+        hidden2_size = hidden1_size//2
+        self.fc = nn.Sequential(
+            nn.Linear(num_kernels*maxpool_out, hidden1_size),
+            nn.ELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden1_size, hidden2_size),
+            nn.ELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden2_size, num_classes)
+        )
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=1)
@@ -64,36 +112,6 @@ class SimpleConformer(nn.Module):
         x = self.transformer(x)
         x = x.contiguous().view(x.size(0), -1)
         x = self.fc(x)
-        return x
-
-
-class ConformerCopy(nn.Module):
-    def __init__(self, timepoints, nhead=2, num_classes=2, depth=2, pool_size=75, n_channels=22, num_kernels=40, kernel_size=25, expansion=4, dropout=0.5):
-        super(ConformerCopy, self).__init__()
-        maxpool_out = (timepoints - kernel_size + 1) // pool_size
-        self.spatio_temporal = nn.Conv2d(
-            n_channels, num_kernels, (1, kernel_size))
-        self.pool = nn.AvgPool2d((1, pool_size))
-        self.dropout = nn.Dropout(dropout)
-        self.batch_norm = nn.BatchNorm2d(num_kernels)
-        self.transformer = _TransformerEncoder(
-            depth, num_kernels, nhead, expansion, dropout)
-        self.classification_head = ClassificationHead(
-            num_kernels*maxpool_out, num_classes)
-
-    def forward(self, x):
-        x = torch.unsqueeze(x, dim=2)
-        x = F.elu(self.spatio_temporal(x))
-        x = self.batch_norm(x)
-        x = self.pool(x)
-        x = self.dropout(x)
-        x = x.squeeze(dim=2)
-        x = rearrange(x, 'b c t -> b t c')
-        x = self.transformer(x)
-        # print(f"Transformer shape: {x.shape}")
-        # x = x.contiguous().view(x.size(0), -1)
-        # print(f"Flattened shape: {x.shape}")
-        x = self.classification_head(x)
         return x
 
 
