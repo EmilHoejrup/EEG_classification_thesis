@@ -27,7 +27,7 @@ train_params:
   lr: 0.0002
   classes: 4
   weight_decay: 0.0001
-  wandb_logging: False
+  wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
   run_name: "lr=0.0002"
 
