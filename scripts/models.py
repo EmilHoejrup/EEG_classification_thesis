@@ -43,7 +43,7 @@ class SimpleConformer(nn.Module):
         self.batch_norm = nn.BatchNorm2d(num_kernels)
 
         self.encoder_layers = nn.TransformerEncoderLayer(
-            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True)
+            d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True, dropout=dropout)
         self.transformer = nn.TransformerEncoder(
             self.encoder_layers, num_layers=6, norm=nn.LayerNorm(num_kernels))
         hidden1_size = 256
