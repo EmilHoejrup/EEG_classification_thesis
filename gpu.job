@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=run          
 #SBATCH --output=job.%j.out     
-#SBATCH --cpus-per-task=2     
+#SBATCH --cpus-per-task=4     
 #SBATCH --time=10:00:00
 #SBATCH --partition=brown
 #SBATCH --gres=gpu:2
