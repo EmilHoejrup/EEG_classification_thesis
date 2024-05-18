@@ -22,12 +22,12 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 900
+  epochs: 1
   batch_size: 64
   lr: 0.0002
   classes: 4
   weight_decay: 0.0001
-  wandb_logging: True
+  wandb_logging: False
   project_name: "FINAL REPORT ALL SUBJECTS"
   run_name: "SimpleConformer + ConformerCopy with new classificationhead"
 
