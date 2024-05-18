@@ -12,7 +12,7 @@ models_to_train: [
     # "ConformerCopy",
   ]
 dataset_list: [
-    # "BCI_2B_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
     "BCI_2A_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
@@ -22,7 +22,7 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 300
+  epochs: 200
   batch_size: 64
   lr: 0.0002
   classes: 4
