@@ -41,8 +41,11 @@ class SimpleConformer(nn.Module):
         self.pool = nn.AvgPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
-        self.transformer = nn.TransformerEncoderLayer(
+
+        self.encoder_layers = nn.TransformerEncoderLayer(
             d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, dropout=dropout)
+        self.transformer = nn.TransformerEncoder(
+            self.encoder_layers, num_layers=6)
         self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
 
     def forward(self, x):
