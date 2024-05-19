@@ -22,7 +22,7 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 600
+  epochs: 900
   batch_size: 64
   lr: 0.0002
   classes: 4
@@ -94,7 +94,7 @@ models:
   SimpleConformer:
     in_channels: [22]
     num_kernels: [40]
-    nhead: [2]
+    nhead: [10]
     pool_size: [75]
     dropout: [0.5]
 datasets:
