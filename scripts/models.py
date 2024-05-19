@@ -16,16 +16,18 @@ class SimpleShallowNet(nn.Module):
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
-        self.pool = nn.AvgPool2d((1, pool_size))
+        self.pool = nn.AvgPool2d((1, pool_size), (1, 15))
         self.batch_norm = nn.BatchNorm2d(num_kernels)
         self.dropout = nn.Dropout(dropout)
-        self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
+        self.fc = nn.Linear(2440, num_classes)
 
     def forward(self, x):
         x = torch.unsqueeze(x, dim=2)
         x = F.elu(self.spatio_temporal(x))
+        # print(x.shape)
         x = self.batch_norm(x)
         x = self.pool(x)
+        # print(x.shape)
         x = x.view(x.size(0), -1)
         x = self.dropout(x)
         x = self.fc(x)

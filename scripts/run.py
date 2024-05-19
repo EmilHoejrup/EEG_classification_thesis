@@ -109,6 +109,7 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             # # print number of trainable parameters
             # print(
             #     f"Number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+            # print(f"timepoints: {timepoints}")
             train(model, train_dataloader,
                   val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs, args=args)
 

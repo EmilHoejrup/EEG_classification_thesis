@@ -1,13 +1,13 @@
 models_to_train: [
     # "SimplePPModel",
-    "TransformerOnly",
+    # "TransformerOnly",
     # "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
     # "GraphFormer",
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
-    # "SimpleShallowNet",
+    "SimpleShallowNet",
     # "SimpleConformer",
     # "ConformerCopy",
   ]
@@ -22,14 +22,14 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 100
+  epochs: 900
   batch_size: 64
   lr: 0.0002
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "PPModel FF"
+  run_name: "SSN with 15 stride"
 
 models:
   EEGConformer:
