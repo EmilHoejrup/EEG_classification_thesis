@@ -1,6 +1,6 @@
 models_to_train: [
-    "SimplePPModel",
-    # "TransformerOnly",
+    # "SimplePPModel",
+    "TransformerOnly",
     # "EEGConformer",
     # "PPModel",
     # "EEGTransformerEmb",
@@ -12,24 +12,24 @@ models_to_train: [
     # "ConformerCopy",
   ]
 dataset_list: [
-    # "BCI_2B_CONTINUOUS",
-    # "BCI_2A_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
+    "BCI_2A_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2A_PERMUTED",
-    "SIMPLE_BCI_2B_PERMUTED",
+    # "SIMPLE_BCI_2A_PERMUTED",
+    # "SIMPLE_BCI_2B_PERMUTED",
   ]
 test: True
 
 train_params:
-  epochs: 300
+  epochs: 100
   batch_size: 64
   lr: 0.0002
   classes: 4
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "SimpleConformer + ConformerCopy with new classificationhead"
+  run_name: "PPModel FF"
 
 models:
   EEGConformer:
