@@ -35,7 +35,6 @@ class SimpleShallowNet(nn.Module):
 class SimpleConformer(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
         super(SimpleConformer, self).__init__()
-        maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
         self.pool = nn.AvgPool2d((1, pool_size), (1, 15))
@@ -77,7 +76,6 @@ class SimpleConformer(nn.Module):
 class ConformerCopy(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
         super(ConformerCopy, self).__init__()
-        maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.temporal = nn.Conv2d(1, num_kernels, (1, kernel_size))
         self.spatial = nn.Conv2d(num_kernels, num_kernels, (in_channels, 1))
         self.pool = nn.AvgPool2d((1, pool_size), (1, 15))
