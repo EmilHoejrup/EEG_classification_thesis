@@ -41,7 +41,7 @@ class SimpleConformer(nn.Module):
         self.pool = nn.AvgPool2d((1, pool_size), (1, 15))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
-
+        self.projection = nn.Conv2d(num_kernels, num_kernels, (1, 1))
         self.encoder_layers = nn.TransformerEncoderLayer(
             d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True, dropout=dropout)
         self.transformer = nn.TransformerEncoder(
@@ -65,8 +65,9 @@ class SimpleConformer(nn.Module):
         x = F.elu(x)
         x = self.pool(x)
         x = self.dropout(x)
+        x = self.projection(x)
         x = x.squeeze(dim=2)
-        x = rearrange(x, 'b c t -> b t c')
+        x = rearrange(x, 'b d t -> b t d')
         x = self.transformer(x)
         x = x.contiguous().view(x.size(0), -1)
         x = self.fc(x)
@@ -82,7 +83,7 @@ class ConformerCopy(nn.Module):
         self.pool = nn.AvgPool2d((1, pool_size), (1, 15))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
-
+        self.projection = nn.Conv2d(num_kernels, num_kernels, (1, 1))
         self.encoder_layers = nn.TransformerEncoderLayer(
             d_model=num_kernels, nhead=nhead, dim_feedforward=4*num_kernels, activation='gelu', batch_first=True, dropout=dropout)
         self.transformer = nn.TransformerEncoder(
@@ -108,8 +109,9 @@ class ConformerCopy(nn.Module):
         x = self.batch_norm(x)
         x = self.pool(x)
         x = self.dropout(x)
+        x = self.projection(x)
         x = x.squeeze(dim=2)
-        # x = rearrange(x, 'b c t -> b t c')
+        x = rearrange(x, 'b d t -> b t d')
         x = self.transformer(x)
         x = x.contiguous().view(x.size(0), -1)
         x = self.fc(x)
