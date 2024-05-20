@@ -8,8 +8,8 @@ models_to_train: [
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
     # "SimpleShallowNet",
-    "SimpleConformer",
-    # "ConformerCopy",
+    # "SimpleConformer",
+    "ConformerCopy",
   ]
 dataset_list: [
     "BCI_2B_CONTINUOUS",
