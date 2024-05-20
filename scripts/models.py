@@ -79,9 +79,11 @@ class SimpleConformer(nn.Module):
 class ConformerCopy(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
         super(ConformerCopy, self).__init__()
+        maxpool_out = (timepoints - kernel_size + 1) // pool_size
+
         self.temporal = nn.Conv2d(1, num_kernels, (1, kernel_size))
         self.spatial = nn.Conv2d(num_kernels, num_kernels, (in_channels, 1))
-        self.pool = nn.AvgPool2d((1, pool_size), (1, 15))
+        self.pool = nn.AvgPool2d((1, pool_size))
         self.dropout = nn.Dropout(dropout)
         self.batch_norm = nn.BatchNorm2d(num_kernels)
         self.projection = nn.Conv2d(num_kernels, num_kernels, (1, 1))
@@ -92,7 +94,7 @@ class ConformerCopy(nn.Module):
         hidden1_size = 256
         hidden2_size = 32
         self.fc = nn.Sequential(
-            nn.Linear(2440, hidden1_size),
+            nn.Linear(num_kernels*maxpool_out, hidden1_size),
             nn.ELU(),
             nn.Dropout(dropout),
             nn.Linear(hidden1_size, hidden2_size),
