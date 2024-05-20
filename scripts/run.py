@@ -1,8 +1,6 @@
 # %%
-from sklearn.metrics import cohen_kappa_score, precision_score, recall_score
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import wandb
 import yaml
 from datasets import *
@@ -10,7 +8,6 @@ from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
 from support.utils import test_metrics
 from braindecode.models import ShallowFBCSPNet, EEGConformer
-from torch.optim.lr_scheduler import LRScheduler
 from itertools import product
 from trainer import Trainer
 from models import *
@@ -101,6 +98,9 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
                     **args, n_classes=num_classes, input_window_samples=timepoints, sfreq=250, pool_time_stride=75)
             elif model_type == 'SimpleShallowNet':
                 model = SimpleShallowNet(
+                    **args, num_classes=num_classes, timepoints=timepoints)
+            elif model_type == 'ShallowFBCSPNetCopy':
+                model = ShallowFBCSPNetCopy(
                     **args, num_classes=num_classes, timepoints=timepoints)
             elif model_type == 'SimpleConformer':
                 model = SimpleConformer(

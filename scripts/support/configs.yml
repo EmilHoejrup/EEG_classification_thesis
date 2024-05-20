@@ -8,8 +8,9 @@ models_to_train: [
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
     # "SimpleShallowNet",
-    "SimpleConformer",
-    "ConformerCopy",
+    "ShallowFBCSPNetCopy",
+    # "SimpleConformer",
+    # "ConformerCopy",
   ]
 dataset_list: [
     # "BCI_2B_CONTINUOUS",
@@ -29,7 +30,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "Simpleconformer with 75 stride"
+  run_name: "ShallowFBCSPNetCopy with 75 stride"
 
 models:
   EEGConformer:
@@ -86,6 +87,12 @@ models:
     dropout: [0.6]
     K: [2, 3, 7]
   SimpleShallowNet:
+    dropout: [0.4]
+    in_channels: [22]
+    num_kernels: [40]
+    kernel_size: [25]
+    pool_size: [75]
+  ShallowFBCSPNetCopy:
     dropout: [0.4]
     in_channels: [22]
     num_kernels: [40]

@@ -24,10 +24,32 @@ class SimpleShallowNet(nn.Module):
     def forward(self, x):
         x = torch.unsqueeze(x, dim=2)
         x = F.elu(self.spatio_temporal(x))
-        print(x.shape)
         x = self.batch_norm(x)
         x = self.pool(x)
-        print(x.shape)
+        x = x.view(x.size(0), -1)
+        x = self.dropout(x)
+        x = self.fc(x)
+        return x
+
+
+class ShallowFBCSPNetCopy(nn.Module):
+    def __init__(self, in_channels, num_classes, timepoints=1001, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75):
+        super(ShallowFBCSPNetCopy, self).__init__()
+        maxpool_out = (timepoints - kernel_size + 1) // pool_size
+        self.temporal = nn.Conv2d(1, num_kernels, (1, kernel_size))
+        self.spatial = nn.Conv2d(num_kernels, num_kernels, (in_channels, 1))
+        self.pool = nn.AvgPool2d((1, pool_size))
+        self.batch_norm = nn.BatchNorm2d(num_kernels)
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(num_kernels*maxpool_out, num_classes)
+
+    def forward(self, x):
+        x = torch.unsqueeze(x, dim=1)
+        x = self.temporal(x)
+        x = self.spatial(x)
+        x = F.elu(x)
+        x = self.batch_norm(x)
+        x = self.pool(x)
         x = x.view(x.size(0), -1)
         x = self.dropout(x)
         x = self.fc(x)
