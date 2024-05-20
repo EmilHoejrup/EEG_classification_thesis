@@ -7,13 +7,13 @@ models_to_train: [
     # "GraphFormer",
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
-    "SimpleShallowNet",
-    # "SimpleConformer",
+    # "SimpleShallowNet",
+    "SimpleConformer",
     # "ConformerCopy",
   ]
 dataset_list: [
     "BCI_2B_CONTINUOUS",
-    "BCI_2A_CONTINUOUS",
+    # "BCI_2A_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
     # "SIMPLE_BCI_2A_PERMUTED",
@@ -29,7 +29,7 @@ train_params:
   weight_decay: 0.0001
   wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "SSN with 15 stride"
+  run_name: "Simpleconformer with 75 stride"
 
 models:
   EEGConformer:
