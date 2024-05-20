@@ -7,14 +7,14 @@ models_to_train: [
     # "GraphFormer",
     # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
-    # "SimpleShallowNet",
+    "SimpleShallowNet",
     "ShallowFBCSPNetCopy",
     # "SimpleConformer",
     # "ConformerCopy",
   ]
 dataset_list: [
-    # "BCI_2B_CONTINUOUS",
-    "BCI_2A_CONTINUOUS",
+    "BCI_2B_CONTINUOUS",
+    # "BCI_2A_CONTINUOUS",
     # "BCI_2B_PERMUTED",
     # "BCI_2A_PERMUTED",
     # "SIMPLE_BCI_2A_PERMUTED",
@@ -28,7 +28,7 @@ train_params:
   lr: 0.0002
   classes: 4
   weight_decay: 0.0001
-  wandb_logging: True
+  wandb_logging: False
   project_name: "FINAL REPORT ALL SUBJECTS"
   run_name: "ShallowFBCSPNetCopy with 75 stride"
 
