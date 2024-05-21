@@ -23,14 +23,14 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 1
+  epochs: 300
   batch_size: 64
   lr: 0.0002
   classes: 4
   weight_decay: 0.0001
-  wandb_logging: False
+  wandb_logging: True
   project_name: "FINAL REPORT ALL SUBJECTS"
-  run_name: "ShallowFBCSPNetCopy with 75 stride"
+  run_name: "Direct implementation of EEGconformer"
 
 models:
   EEGConformer:
