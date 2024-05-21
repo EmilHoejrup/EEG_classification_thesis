@@ -473,7 +473,9 @@ class EEGConformer(EEGModuleMixin, nn.Module):
                                        add_log_softmax=self.add_log_softmax)
 
     def forward(self, x: Tensor) -> Tensor:
-        x = torch.unsqueeze(x, dim=1)  # add one extra dimension
+        x = torch.unsqueeze(x, dim=1)
+
+        # x = torch.unsqueeze(x, dim=3)  # add one extra dimension
         x = self.patch_embedding(x)
         x = self.transformer(x)
         x = self.fc(x)
@@ -530,10 +532,12 @@ class _PatchEmbedding(nn.Module):
         super().__init__()
 
         self.shallownet = nn.Sequential(
-            nn.Conv2d(1, n_filters_time,
-                      (1, filter_time_length), (1, 1)),
-            nn.Conv2d(n_filters_time, n_filters_time,
-                      (n_channels, 1), (1, 1)),
+            # nn.Conv2d(1, n_filters_time,
+            #           (1, filter_time_length), (1, 1)),
+            # nn.Conv2d(n_filters_time, n_filters_time,
+            #           (n_channels, 1), (1, 1)),
+            nn.Conv2d(n_channels, n_filters_time,
+                      (1, filter_time_length)),
             nn.BatchNorm2d(num_features=n_filters_time),
             nn.ELU(),
             nn.AvgPool2d(
@@ -553,7 +557,10 @@ class _PatchEmbedding(nn.Module):
         )
 
     def forward(self, x: Tensor) -> Tensor:
+        x = Rearrange("b 1 c t -> b c 1 t")(x)
+        # print(x.shape)
         x = self.shallownet(x)
+        # print(x.shape)
         x = self.projection(x)
         return x
 

@@ -22,7 +22,9 @@ class SimpleShallowNet(nn.Module):
         self.fc = nn.Linear(2440, num_classes)
 
     def forward(self, x):
+        print(x.shape)
         x = torch.unsqueeze(x, dim=2)
+        print(x.shape)
         x = F.elu(self.spatio_temporal(x))
         x = self.batch_norm(x)
         x = self.pool(x)
