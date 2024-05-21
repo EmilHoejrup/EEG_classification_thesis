@@ -7,7 +7,8 @@ from datasets import *
 from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
 from support.utils import test_metrics
-from braindecode.models import ShallowFBCSPNet, EEGConformer
+from braindecode.models import ShallowFBCSPNet
+from EEGConformer import EEGConformer
 from itertools import product
 from trainer import Trainer
 from models import *
