@@ -1,4 +1,4 @@
-# EEG classification with transformers
+# EEG data encoding for classification with deep learning models
 
 A GitHub repository for the thesis **"EEG data encoding for classification with deep learning models"** submitted at the IT University of Copenhagen. The thesis investigates several different approaches to harnessing the power of transformer models for EEG classification.
 
