@@ -80,9 +80,9 @@ n_channels = windows_dataset[0][0].shape[0]
 input_window_samples = windows_dataset[0][0].shape[1]
 
 
-class SimpleShallowNet(nn.Module):
+class CollapsedShallowNet(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75):
-        super(SimpleShallowNet, self).__init__()
+        super(CollapsedShallowNet, self).__init__()
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
@@ -111,7 +111,7 @@ shallowfbcspnet = ShallowFBCSPNet(
     final_conv_length="auto",
 )
 
-simpleshallow = SimpleShallowNet(n_channels, n_classes, timepoints=1125)
+simpleshallow = CollapsedShallowNet(n_channels, n_classes, timepoints=1125)
 # Display torchinfo table describing the model
 
 models.append(shallowfbcspnet)

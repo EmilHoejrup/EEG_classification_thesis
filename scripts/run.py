@@ -8,11 +8,9 @@ from support.constants import CONFIG_FILE
 from torch.utils.data import DataLoader
 from support.utils import test_metrics
 from braindecode.models import ShallowFBCSPNet
-from EEGConformer import EEGConformer
 from itertools import product
 from trainer import Trainer
 from models import *
-from GraphFormer import GraphFormer
 
 has_gpu = torch.cuda.is_available()
 device = 'mps' if getattr(
@@ -85,32 +83,28 @@ def train_models(train_dataloader, val_dataloader, test_dataloader, timepoints, 
             elif model_type == 'ConformerCopy':
                 model = ConformerCopy(
                     **args, num_classes=num_classes, timepoints=timepoints)
-            elif model_type == 'GraphFormer':
-                model = GraphFormer(
-                    **args, num_classes=num_classes, seq_len=timepoints)
             elif model_type == 'SimplePPModel':
                 model = SimplePPModel(
                     **args, num_classes=num_classes, vocab_size=vocab_size)
-            elif model_type == 'SimpleGraphFormer':
-                model = SimpleGraphFormer(
+            elif model_type == 'GraphFormer':
+                model = GraphFormer(
                     **args, num_classes=num_classes, seq_len=timepoints)
             elif model_type == 'ShallowFBCSPNet':
                 model = ShallowFBCSPNet(
                     **args, n_classes=num_classes, input_window_samples=timepoints, sfreq=250, pool_time_stride=75)
-            elif model_type == 'SimpleShallowNet':
-                model = SimpleShallowNet(
+            elif model_type == 'CollapsedShallowNet':
+                model = CollapsedShallowNet(
                     **args, num_classes=num_classes, timepoints=timepoints)
             elif model_type == 'ShallowFBCSPNetCopy':
                 model = ShallowFBCSPNetCopy(
                     **args, num_classes=num_classes, timepoints=timepoints)
-            elif model_type == 'SimpleConformer':
-                model = SimpleConformer(
+            elif model_type == 'CollapsedConformer':
+                model = CollapsedConformer(
                     **args, num_classes=num_classes, timepoints=timepoints)
-            # print(model)
-            # # print number of trainable parameters
-            print(
-                f"Number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
-            print(f"timepoints: {timepoints}")
+            # (optional) print number of trainable parameters
+            # print(
+            #     f"Number of trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+            # print(f"timepoints: {timepoints}")
             train(model, train_dataloader,
                   val_dataloader, test_dataloader, timepoints, dataset_combination, configs=configs, args=args)
 

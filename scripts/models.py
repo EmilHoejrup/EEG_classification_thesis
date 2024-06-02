@@ -10,9 +10,9 @@ import math
 from layers import _PositionalEncoding, _TransformerEncoder, ClassificationHead
 
 
-class SimpleShallowNet(nn.Module):
+class CollapsedShallowNet(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1001, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75):
-        super(SimpleShallowNet, self).__init__()
+        super(CollapsedShallowNet, self).__init__()
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
@@ -56,9 +56,9 @@ class ShallowFBCSPNetCopy(nn.Module):
         return x
 
 
-class SimpleConformer(nn.Module):
+class CollapsedConformer(nn.Module):
     def __init__(self, in_channels, num_classes, timepoints=1000, dropout=0.5, num_kernels=40, kernel_size=25, pool_size=75, nhead=2):
-        super(SimpleConformer, self).__init__()
+        super(CollapsedConformer, self).__init__()
         maxpool_out = (timepoints - kernel_size + 1) // pool_size
         self.spatio_temporal = nn.Conv2d(
             in_channels, num_kernels, (1, kernel_size))
@@ -249,9 +249,9 @@ class EEGTransformerEmb(nn.Module):
         return out
 
 
-class SimpleGraphFormer(nn.Module):
+class GraphFormer(nn.Module):
     def __init__(self, seq_len, K, nhead=2, num_classes=2, depth=2, emb_size=20, expansion=4, dropout=0.5, avg_pool_kernel=15, avg_pool_stride=5, num_blocks=3):
-        super(SimpleGraphFormer, self).__init__()
+        super(GraphFormer, self).__init__()
         # self.embedding = nn.Embedding(vocab_size, emb_size)
         avg_pool_output = (seq_len-avg_pool_kernel)//avg_pool_stride + 1
         self.spatial_conv = nn.Conv2d(emb_size, emb_size, (22, 1), (1, 1))

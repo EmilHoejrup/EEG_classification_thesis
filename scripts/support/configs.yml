@@ -5,11 +5,10 @@ models_to_train: [
     # "PPModel",
     # "EEGTransformerEmb",
     # "GraphFormer",
-    # "SimpleGraphFormer",
     # "ShallowFBCSPNet",
-    # "SimpleShallowNet",
+    # "CollapsedShallowNet",
     # "ShallowFBCSPNetCopy",
-    # "SimpleConformer",
+    # "CollapsedConformer",
     # "ConformerCopy",
   ]
 dataset_list: [
@@ -69,7 +68,7 @@ models:
     nhead: [10]
     pool_size: [75]
     dropout: [0.6]
-  SimpleGraphFormer:
+  GraphFormer:
     nhead: [2]
     depth: [2]
     emb_size: [22]
@@ -79,14 +78,7 @@ models:
     K: [1, 2, 3, 5, 9]
     avg_pool_kernel: [5, 15]
     avg_pool_stride: [3, 5]
-  GraphFormer:
-    nhead: [2]
-    depth: [2]
-    emb_size: [22]
-    expansion: [4]
-    dropout: [0.6]
-    K: [2, 3, 7]
-  SimpleShallowNet:
+  CollapsedShallowNet:
     dropout: [0.4]
     in_channels: [22]
     num_kernels: [40]
@@ -98,7 +90,7 @@ models:
     num_kernels: [40]
     kernel_size: [25]
     pool_size: [75]
-  SimpleConformer:
+  CollapsedConformer:
     in_channels: [22]
     num_kernels: [40]
     nhead: [10]
