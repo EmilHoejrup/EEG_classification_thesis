@@ -1,15 +1,14 @@
 models_to_train: [
     # "SimplePPModel",
     # "TransformerOnly",
-    "EEGConformer",
+    # "EEGConformer",
     # "PPModel",
-    # "EEGTransformerEmb",
     # "GraphFormer",
     # "ShallowFBCSPNet",
-    # "CollapsedShallowNet",
-    # "ShallowFBCSPNetCopy",
-    # "CollapsedConformer",
-    # "ConformerCopy",
+    "CollapsedShallowNet",
+    "ShallowFBCSPNetCopy",
+    "CollapsedConformer",
+    "ConformerCopy",
   ]
 dataset_list: [
     "BCI_2B_CONTINUOUS",
@@ -22,12 +21,12 @@ dataset_list: [
 test: True
 
 train_params:
-  epochs: 300
+  epochs: 1
   batch_size: 64
   lr: 0.0002
   classes: 4
   weight_decay: 0.0001
-  wandb_logging: True
+  wandb_logging: False
   project_name: "FINAL REPORT ALL SUBJECTS"
   run_name: "Direct implementation of EEGconformer"
 
@@ -51,12 +50,6 @@ models:
     nhead: [2]
     depth: [2]
     emb_size: [22]
-    expansion: [4]
-    dropout: [0.7]
-  EEGTransformerEmb:
-    nhead: [2]
-    depth: [2]
-    emb_size: [20]
     expansion: [4]
     dropout: [0.7]
   ShallowFBCSPNet:

@@ -7,3 +7,4 @@ wandb/
 scripts/attached
 *.ipynb
 experiment.py
+gpu.job
