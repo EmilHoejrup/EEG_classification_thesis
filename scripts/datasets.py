@@ -4,18 +4,13 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import pickle as p
 import gzip
-from pathlib import Path
 from itertools import product
-from sklearn.cluster import KMeans
 from support.constants import *
 import yaml
-from sklearn.preprocessing import StandardScaler
 from support.constants import CONFIG_FILE
-from torch.utils.data import DataLoader
 with open(CONFIG_FILE, 'r') as file:
     configs = yaml.safe_load(file)
 from support.utils import *
-from braindecode.datautil import load_concat_dataset
 
 BCI_IV_2B_DIR = DATA_DIR / 'BCI_IV_2B'
 BCI_2B_TRAIN = BCI_IV_2B_DIR / 'train'
@@ -59,19 +54,14 @@ def fetch_data(data_dir):
 
 
 class CONTINUOUS_DATASET(Dataset):
+    """ The default dataset class without permutation pattern preprocessing"""
+
     def __init__(self, data_dir, train=True, val=False, test=False):
         self.X, self.Y, self.X_test, self.Y_test = fetch_data(
             data_dir)
 
         self.X = self.X.to(torch.float32)
         self.X_test = self.X_test.to(torch.float32)
-        # baseline_start = 0
-        # baseline_end = 125
-        # baseline_mean = torch.mean(
-        #     self.X[:, :, baseline_start:baseline_end], dim=2, keepdim=True)
-        # self.X = self.X - baseline_mean
-        # self.X_test = self.X_test - baseline_mean
-        # standardise
         target_mean = torch.mean(self.X, dim=(0, 2), keepdim=True)
         target_std = torch.std(self.X, dim=(0, 2), keepdim=True)
         self.X = (self.X - target_mean) / target_std
@@ -119,6 +109,8 @@ class BCI_2B_CONTINUOUS(CONTINUOUS_DATASET):
 
 
 class PERMUTATION_DATASET(Dataset):
+    """Dataset class implementing the permutation pattern preprocessing"""
+
     def __init__(self, window_size, stride, data_dir, train=True, val=False, test=False):
         self.X, self.Y, self.X_test, self.Y_test = fetch_data(
             data_dir)
@@ -208,6 +200,8 @@ class BCI_2B_PERMUTED(PERMUTATION_DATASET):
 
 
 class SIMPLE_PERMUTATION_DATASET(Dataset):
+    """ Dataset class implementing the simplified version of permutation pattern preprocessing"""
+
     def __init__(self, window_size, stride, data_dir, train=True, val=False, test=False):
         self.X, self.Y, self.X_test, self.Y_test = fetch_data(
             data_dir)
